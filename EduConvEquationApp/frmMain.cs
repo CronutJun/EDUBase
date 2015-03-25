@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using EduConvEquation;
 
 namespace EduConvEquationApp
 {
@@ -20,8 +21,8 @@ namespace EduConvEquationApp
         private void btnCall_Click(object sender, EventArgs e)
         {
             ofdFile.ShowDialog();
-            EduConvEquation.EduConvEquation eConv = new EduConvEquation.EduConvEquation();
-            lblResult.Text = eConv.ConvEquation(ofdFile.FileName);
+            ConvEquation eConv = new ConvEquation();
+            lblResult.Text = eConv.Convert(ofdFile.FileName);
         }
     }
 }

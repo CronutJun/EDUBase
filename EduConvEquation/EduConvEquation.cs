@@ -10,7 +10,7 @@ namespace EduConvEquation
     {
         public String ConvEquation(String path)
         {
-            return "ABC";
+            return path;
         }
     }
 }

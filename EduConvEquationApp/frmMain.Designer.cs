@@ -30,6 +30,7 @@
         {
             this.btnCall = new System.Windows.Forms.Button();
             this.lblResult = new System.Windows.Forms.Label();
+            this.ofdFile = new System.Windows.Forms.OpenFileDialog();
             this.SuspendLayout();
             // 
             // btnCall
@@ -52,11 +53,17 @@
             this.lblResult.TabIndex = 1;
             this.lblResult.Text = "Result";
             // 
+            // ofdFile
+            // 
+            this.ofdFile.DefaultExt = "gif";
+            this.ofdFile.Filter = "Source File (*.gif)|*.gif";
+            this.ofdFile.Title = "Source File";
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(341, 274);
+            this.ClientSize = new System.Drawing.Size(341, 111);
             this.Controls.Add(this.lblResult);
             this.Controls.Add(this.btnCall);
             this.Name = "frmMain";
@@ -70,6 +77,7 @@
 
         private System.Windows.Forms.Button btnCall;
         private System.Windows.Forms.Label lblResult;
+        private System.Windows.Forms.OpenFileDialog ofdFile;
     }
 }
 

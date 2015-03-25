@@ -19,8 +19,9 @@ namespace EduConvEquationApp
 
         private void btnCall_Click(object sender, EventArgs e)
         {
+            ofdFile.ShowDialog();
             EduConvEquation.EduConvEquation eConv = new EduConvEquation.EduConvEquation();
-            lblResult.Text = eConv.ConvEquation("abc");
+            lblResult.Text = eConv.ConvEquation(ofdFile.FileName);
         }
     }
 }

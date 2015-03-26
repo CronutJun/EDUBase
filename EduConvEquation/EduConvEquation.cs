@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using System.Collections.Generic;
 
 namespace EduConvEquation
 {
@@ -102,7 +101,7 @@ namespace EduConvEquation
             }
             Console.WriteLine("Count of block = {0}", LstBlock.Count);
             if (LstBlock.Count > 0)
-            {
+            {                                                                                                                                                                                                                                                                                                                       
                 totBlock = new byte[totSizeBlock];
                 int destOffset = 0;
                 foreach (byte[] elem in LstBlock)
@@ -119,6 +118,5 @@ namespace EduConvEquation
                         Console.Write("{0:X2} ", totBlock[i]);
             }
         }
-
     }
 }

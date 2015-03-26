@@ -37,7 +37,7 @@
             // 
             this.btnCall.Location = new System.Drawing.Point(24, 24);
             this.btnCall.Name = "btnCall";
-            this.btnCall.Size = new System.Drawing.Size(89, 47);
+            this.btnCall.Size = new System.Drawing.Size(89, 42);
             this.btnCall.TabIndex = 0;
             this.btnCall.Text = "Call DLL";
             this.btnCall.UseVisualStyleBackColor = true;

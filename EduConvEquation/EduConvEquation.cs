@@ -9,10 +9,9 @@ namespace EduConvEquation
 {
     public class ConvEquation
     {
-        private static int HEADER_LEN = 14;
-
         private byte[] bufMTEFHeader = { 0x21, 0xFF, 0x0B, 0x4D, 0x61, 0x74, 0x68, 0x54, 0x79, 0x70, 0x65, 0x30, 0x30, 0x31 };
         private List<byte[]> LstBlock = new List<byte[]>();
+        private MTEFHeader stMTEFHeader = new MTEFHeader();
 
         public String Convert(String path)
         {
@@ -26,7 +25,7 @@ namespace EduConvEquation
                 if (findPos >= 0)
                 {
                     Console.WriteLine("Found. position = {0}", findPos);
-                    CollectBlock(fs, findPos + HEADER_LEN);
+                    CollectMTEFBlock(fs, findPos + MTEFConst.HEADER_LEN);
                     return path;
                 }
                 else
@@ -55,9 +54,9 @@ namespace EduConvEquation
             byte[] readBuffer = new byte[16384]; // our input buffer
             //byte[] readBuffer = new byte[100]; // our input buffer
             int bytesRead = 0; // number of bytes read
-            int offset = 0;    // offset inside read-buffer
-            long filePos = 0;  // position inside the file before read operation
-            while ((bytesRead = fs.Read(readBuffer, offset, readBuffer.Length - offset)) > 0)
+            int offset    = 0; // offset inside read-buffer
+            long filePos  = 0; // position inside the file before read operation
+            while( (bytesRead = fs.Read(readBuffer, offset, readBuffer.Length - offset)) > 0 )
             {
                 for( int i = 0; i < bytesRead + offset - bufferToLookFor.Length; i++ )
                 {
@@ -84,7 +83,7 @@ namespace EduConvEquation
             return -1;
         }
 
-        private void CollectBlock(FileStream fs, long startPos)
+        private void CollectMTEFBlock(FileStream fs, long startPos)
         {
             fs.Seek(startPos, SeekOrigin.Begin);
             int sizeBlock    = 0;
@@ -116,7 +115,37 @@ namespace EduConvEquation
                         Console.WriteLine("{0:X2}", totBlock[i]);
                     else
                         Console.Write("{0:X2} ", totBlock[i]);
+                ParseMTEF(totBlock);
             }
+        }
+
+        private void ParseMTEF(byte[] data)
+        {
+            int dataPos = 0;
+            char[] strBytes = new char[255];
+
+            // Header
+            stMTEFHeader.MTEFVer       = data[0];
+            stMTEFHeader.platform      = data[1];
+            stMTEFHeader.productVer    = data[2];
+            stMTEFHeader.productSubVer = data[3];
+
+            dataPos = 4;
+            int i = 0;
+            Array.Clear(strBytes, 0, 255);
+            while( data[dataPos] != 0x00 )
+            {
+                strBytes[i] = (char)data[dataPos];
+                dataPos++;
+                i++;
+            }
+            strBytes[i] = (char)0x00;
+
+            stMTEFHeader.appKey = new String(strBytes);
+
+            dataPos++;
+            stMTEFHeader.EquatOpt = data[dataPos];
         }
     }
 }
+ 

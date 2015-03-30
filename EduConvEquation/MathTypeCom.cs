@@ -77,7 +77,6 @@ namespace EduConvEquation
     {
         private byte recType;
         private byte option;
-        private List<AbstractRecord> objects = new List<AbstractRecord>();
 
         public byte RecType
         {
@@ -102,17 +101,376 @@ namespace EduConvEquation
                 option = value;
             }
         }
+    }
 
-        public List<AbstractRecord> Objects
+    public class EncodingDefRecord : AbstractRecord
+    {
+        private string encName;
+
+        public string EncName
         {
             get
             {
-                return objects;
+                return encName;
+            }
+            set
+            {
+                encName = value;
             }
         }
     }
 
-    public class EndRecord : AbstractRecord {
+    public class FontDefRecord : AbstractRecord
+    {
+        private byte indexOfEnc;
+        private string fontName;
+
+        public byte IndexOfEnc
+        {
+            get
+            {
+                return indexOfEnc;
+            }
+            set
+            {
+                indexOfEnc = value;
+            }
+        }
+
+        public string FontName
+        {
+            get
+            {
+                return fontName;
+            }
+            set
+            {
+                fontName = value;
+            }
+        }
+    }
+
+    public class DimArray
+    {
+        private string size;
+        private int unit;
+
+        public string Size
+        {
+            get
+            {
+                return size;
+            }
+            set
+            {
+                size = value;
+            }
+        }
+
+        public int Unit
+        {
+            get
+            {
+                return unit;
+            }
+            set
+            {
+                unit = value;
+            }
+        }
+    }
+
+    public class EqnPrefsRecord : AbstractRecord
+    {
+        private int sizeCnt  = 0;
+        private int spaceCnt = 0;
+        private int styleCnt = 0;
+
+        private List<DimArray> sizeArr = new List<DimArray>();
+        private List<DimArray> spaceArr = new List<DimArray>();
+        private List<DimArray> styleArr = new List<DimArray>();
+
+        public int SizeCnt {
+            get {
+                return sizeCnt;
+            }
+            set {
+                sizeCnt = value;
+                sizeArr.Clear();
+                for( int i=0; i < sizeCnt; i++ ) {
+                    sizeArr.Add(new DimArray());
+                }
+            }
+        }
+        public List<DimArray> SizeArr {
+            get {
+                return sizeArr;
+            }
+        }
+
+        public int SpaceCnt {
+            get {
+                return spaceCnt;
+            }
+            set {
+                spaceCnt = value;
+                spaceArr.Clear();
+                for( int i=0; i < spaceCnt; i++ ) {
+                    spaceArr.Add(new DimArray());
+                }
+            }
+        }
+        public List<DimArray> SpaceArr {
+            get {
+                return spaceArr;
+            }
+        }
+
+        public int StyleCnt {
+            get {
+                return styleCnt;
+            }
+            set {
+                styleCnt = value;
+                styleArr.Clear();
+                for( int i=0; i < styleCnt; i++ ) {
+                    styleArr.Add(new DimArray());
+                }
+            }
+        }
+        public List<DimArray> StyleArr {
+            get {
+                return styleArr;
+            }
+        }
+
+        public void ParseNibbleData(byte[] data, ref int dataPos)
+        {
+            int totCnt = 0;
+            int upperNibble = 0;
+            int lowerNibble = 0;
+
+            dataPos++;
+            SizeCnt = data[dataPos];
+            dataPos++;
+
+            bool unitYN = true;
+            while (totCnt < sizeCnt)
+            {
+                upperNibble = data[dataPos] & 0xF0;
+                if( upperNibble == 0xF0 )
+                {
+                    totCnt++;
+                    unitYN = true;
+                }
+                else {
+                    makeNibbleData(0, upperNibble, unitYN, totCnt);
+                    unitYN = false;
+                }
+
+                lowerNibble = (data[dataPos] & 0x0F) << 4;
+                if( lowerNibble == 0xF0 )
+                {
+                    totCnt++;
+                    unitYN = true;
+                }
+                else {
+                    makeNibbleData(0, lowerNibble, unitYN, totCnt);
+                    unitYN = false;
+                }
+
+                dataPos++;
+            }
+            Console.WriteLine("Size Cnt = {0}", totCnt);
+            foreach (DimArray size in SizeArr)
+            {
+                Console.WriteLine("Size = {0}", size.Size);
+            }
+
+            SpaceCnt = data[dataPos];
+            dataPos++;
+            totCnt = 0;
+            unitYN = true;
+            while (totCnt < spaceCnt)
+            {
+                upperNibble = data[dataPos] & 0xF0;
+                if (upperNibble == 0xF0)
+                {
+                    totCnt++;
+                    unitYN = true;
+                }
+                else
+                {
+                    makeNibbleData(1, upperNibble, unitYN, totCnt);
+                    unitYN = false;
+                }
+
+                lowerNibble = (data[dataPos] & 0x0F) << 4;
+                if (lowerNibble == 0xF0)
+                {
+                    totCnt++;
+                    unitYN = true;
+                }
+                else
+                {
+                    makeNibbleData(1, lowerNibble, unitYN, totCnt);
+                    unitYN = false;
+                }
+
+                dataPos++;
+            }
+            Console.WriteLine("Space Cnt = {0}", totCnt);
+            foreach (DimArray size in SpaceArr)
+            {
+                Console.WriteLine("Space = {0}", size.Size);
+            }
+
+            StyleCnt = data[dataPos];
+            dataPos++;
+            totCnt = 0;
+            unitYN = true;
+            while (totCnt < styleCnt)
+            {
+                if (data[dataPos] == 0x00)
+                    break;
+
+                StyleArr[totCnt].Size = data[dataPos].ToString();
+                dataPos++;
+
+                StyleArr[totCnt].Unit = data[dataPos];
+                dataPos++;
+                totCnt++;
+            }
+            Console.WriteLine("Style Cnt = {0}", totCnt);
+            foreach (DimArray size in StyleArr)
+            {
+                Console.WriteLine("Style = {0}, Unit = {1}", size.Size, size.Unit);
+            }
+        }
+
+        private void makeNibbleData(int type, int nibbleData, bool unitYN, int idx) 
+        {
+            if( type == 0 )
+            {
+                if( unitYN )
+                {
+                    SizeArr[idx].Unit = nibbleData;
+                }
+                else
+                {
+                    if (nibbleData == 0x00)
+                    {
+                        SizeArr[idx].Size +="0";
+                    }
+                    else if (nibbleData == 0x10)
+                    {
+                        SizeArr[idx].Size += "1";
+                    }
+                    else if (nibbleData == 0x20)
+                    {
+                        SizeArr[idx].Size += "2";
+                    }
+                    else if (nibbleData == 0x30)
+                    {
+                        SizeArr[idx].Size += "3";
+                    }
+                    else if (nibbleData == 0x40)
+                    {
+                        SizeArr[idx].Size += "4";
+                    }
+                    else if (nibbleData == 0x50)
+                    {
+                        SizeArr[idx].Size += "5";
+                    }
+                    else if (nibbleData == 0x60)
+                    {
+                        SizeArr[idx].Size += "6";
+                    }
+                    else if (nibbleData == 0x70)
+                    {
+                        SizeArr[idx].Size += "7";
+                    }
+                    else if (nibbleData == 0x80)
+                    {
+                        SizeArr[idx].Size += "8";
+                    }
+                    else if (nibbleData == 0x90)
+                    {
+                        SizeArr[idx].Size += "9";
+                    }
+                    else if (nibbleData == 0xA0)
+                    {
+                        SizeArr[idx].Size += ".";
+                    }
+                    else if (nibbleData == 0xB0)
+                    {
+                        SizeArr[idx].Size += "-";
+                    }
+                }
+            }
+            else if (type == 1)
+            {
+                if (unitYN)
+                {
+                    SpaceArr[idx].Unit = nibbleData;
+                }
+                else
+                {
+                    if (nibbleData == 0x00)
+                    {
+                        SpaceArr[idx].Size += "0";
+                    }
+                    else if (nibbleData == 0x10)
+                    {
+                        SpaceArr[idx].Size += "1";
+                    }
+                    else if (nibbleData == 0x20)
+                    {
+                        SpaceArr[idx].Size += "2";
+                    }
+                    else if (nibbleData == 0x30)
+                    {
+                        SpaceArr[idx].Size += "3";
+                    }
+                    else if (nibbleData == 0x40)
+                    {
+                        SpaceArr[idx].Size += "4";
+                    }
+                    else if (nibbleData == 0x50)
+                    {
+                        SpaceArr[idx].Size += "5";
+                    }
+                    else if (nibbleData == 0x60)
+                    {
+                        SpaceArr[idx].Size += "6";
+                    }
+                    else if (nibbleData == 0x70)
+                    {
+                        SpaceArr[idx].Size += "7";
+                    }
+                    else if (nibbleData == 0x80)
+                    {
+                        SpaceArr[idx].Size += "8";
+                    }
+                    else if (nibbleData == 0x90)
+                    {
+                        SpaceArr[idx].Size += "9";
+                    }
+                    else if (nibbleData == 0xA0)
+                    {
+                        SpaceArr[idx].Size += ".";
+                    }
+                    else if (nibbleData == 0xB0)
+                    {
+                        SpaceArr[idx].Size += "-";
+                    }
+                }
+            }
+        }
+    }
+
+    public class EndRecord : AbstractRecord
+    {
 
     }
 }

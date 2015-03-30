@@ -12,6 +12,15 @@ namespace EduConvEquation
         private byte[] bufMTEFHeader = { 0x21, 0xFF, 0x0B, 0x4D, 0x61, 0x74, 0x68, 0x54, 0x79, 0x70, 0x65, 0x30, 0x30, 0x31 };
         private List<byte[]> LstBlock = new List<byte[]>();
         private MTEFHeader stMTEFHeader = new MTEFHeader();
+        private List<AbstractRecord> objects = new List<AbstractRecord>();
+
+        public List<AbstractRecord> Objects
+        {
+            get
+            {
+                return objects;
+            }
+        }
 
         public String Convert(String path)
         {
@@ -115,6 +124,7 @@ namespace EduConvEquation
                         Console.WriteLine("{0:X2}", totBlock[i]);
                     else
                         Console.Write("{0:X2} ", totBlock[i]);
+                Console.WriteLine("");
                 ParseMTEF(totBlock);
             }
         }
@@ -122,7 +132,6 @@ namespace EduConvEquation
         private void ParseMTEF(byte[] data)
         {
             int dataPos = 0;
-            char[] strBytes = new char[255];
 
             // Header
             stMTEFHeader.MTEFVer       = data[0];
@@ -130,21 +139,76 @@ namespace EduConvEquation
             stMTEFHeader.productVer    = data[2];
             stMTEFHeader.productSubVer = data[3];
 
-            dataPos = 4;
-            int i = 0;
-            Array.Clear(strBytes, 0, 255);
-            while( data[dataPos] != 0x00 )
-            {
-                strBytes[i] = (char)data[dataPos];
-                dataPos++;
-                i++;
-            }
-            strBytes[i] = (char)0x00;
-
-            stMTEFHeader.appKey = new String(strBytes);
+            dataPos = 5;
+            stMTEFHeader.appKey = ByteToString(data, ref dataPos);
 
             dataPos++;
             stMTEFHeader.EquatOpt = data[dataPos];
+
+            // parse MTEF Records
+            dataPos++;
+            parseMTEFRecords(data, dataPos);
+        }
+
+        private void parseMTEFRecords(byte[] data, int dataPos)
+        {
+            int dp = dataPos;
+
+            // parse MTEF Records
+            if (data[dp] == MTEFConst.REC_ENCODING_DEF)
+            {
+                Objects.Add(new EncodingDefRecord());
+                EncodingDefRecord encDefRec = (EncodingDefRecord)Objects.Last<AbstractRecord>();
+                encDefRec.RecType = MTEFConst.REC_ENCODING_DEF;
+                dp++;
+                encDefRec.EncName = ByteToString(data, ref dp);
+                Console.WriteLine("dp = {0}, EncName = {1}", dp, encDefRec.EncName);
+            }
+            else if (data[dp] == MTEFConst.REC_FONT_DEF)
+            {
+                Objects.Add(new FontDefRecord());
+                FontDefRecord fontDefRec = (FontDefRecord)Objects.Last<AbstractRecord>();
+                fontDefRec.RecType = MTEFConst.REC_FONT_DEF;
+                dp++;
+                fontDefRec.IndexOfEnc = data[dp];
+                dp++;
+                fontDefRec.FontName = ByteToString(data, ref dp);
+                Console.WriteLine("IndexOfEnd = {0}, FontName = {1}, dataPos = {2}", fontDefRec.IndexOfEnc, fontDefRec.FontName, dp);
+            }
+            else if (data[dp] == MTEFConst.REC_EQN_PREFS)
+            {
+                Objects.Add(new EqnPrefsRecord());
+                EqnPrefsRecord eqnPrefsRec = (EqnPrefsRecord)Objects.Last<AbstractRecord>();
+                eqnPrefsRec.RecType = MTEFConst.REC_EQN_PREFS;
+                dp++;
+                eqnPrefsRec.Option = data[dp];
+                eqnPrefsRec.ParseNibbleData(data, ref dp);
+                Console.WriteLine("dp = {0}, data = {1}", dp, data[dp]);
+            }
+            else return;
+
+            dp++;
+            if (dp < data.Length)
+            {
+                parseMTEFRecords(data, dp);
+            }
+        }
+
+        private string ByteToString(byte[] data, ref int dataPos)
+        {
+            byte[] strBytes = new byte[255];
+
+            int i = 0;
+            Array.Clear(strBytes, 0x00, 255);
+            while (data[dataPos] != 0x00)
+            {
+                strBytes[i] = data[dataPos];
+                dataPos++;
+                i++;
+            }
+            strBytes[i] = 0x00;
+
+            return Encoding.Default.GetString(strBytes, 0, i);
         }
     }
 }

@@ -13,6 +13,7 @@ namespace EduConvEquation
         private List<byte[]> LstBlock = new List<byte[]>();
         private MTEFHeader stMTEFHeader = new MTEFHeader();
         private List<AbstractRecord> objects = new List<AbstractRecord>();
+        private ObjectListRecord parentObjListPtr = null;
 
         public List<AbstractRecord> Objects
         {
@@ -22,8 +23,9 @@ namespace EduConvEquation
             }
         }
 
-        public String Convert(String path)
+        public string Convert(string path)
         {
+            string retStr;
             if( !File.Exists(path) )
                 return "File does not exist.";
             else
@@ -35,7 +37,13 @@ namespace EduConvEquation
                 {
                     Console.WriteLine("Found. position = {0}", findPos);
                     CollectMTEFBlock(fs, findPos + MTEFConst.HEADER_LEN);
-                    return path;
+                    retStr = "";
+                    foreach(AbstractRecord rec in objects) {
+                        if (rec.RecType == MTEFConst.REC_CHAR) {
+                            retStr += ((ObjectListRecord)rec).VariationStr;
+                        }
+                    }
+                    return retStr;
                 }
                 else
                 {
@@ -44,7 +52,7 @@ namespace EduConvEquation
             }
         }
 
-        public String Convert(FileStream stream)
+        public string Convert(FileStream stream)
         {
             long findPos = findMatch(stream, bufMTEFHeader);
             if (findPos >= 0)
@@ -146,6 +154,9 @@ namespace EduConvEquation
             stMTEFHeader.EquatOpt = data[dataPos];
 
             // parse MTEF Records
+            Objects.Clear();
+            parentObjListPtr = null;
+
             dataPos++;
             parseMTEFRecords(data, dataPos);
         }
@@ -179,11 +190,144 @@ namespace EduConvEquation
             {
                 Objects.Add(new EqnPrefsRecord());
                 EqnPrefsRecord eqnPrefsRec = (EqnPrefsRecord)Objects.Last<AbstractRecord>();
-                eqnPrefsRec.RecType = MTEFConst.REC_EQN_PREFS;
+                eqnPrefsRec.RecType = data[dp];
                 dp++;
                 eqnPrefsRec.Option = data[dp];
                 eqnPrefsRec.ParseNibbleData(data, ref dp);
                 Console.WriteLine("dp = {0}, data = {1}", dp, data[dp]);
+            }
+            else if (data[dp] == MTEFConst.REC_FONT_STYLE_DEF)
+            {
+                Objects.Add(new FontStyleDefRecord());
+                FontStyleDefRecord fontStyleDefRec = (FontStyleDefRecord)Objects.Last<AbstractRecord>();
+                fontStyleDefRec.RecType = data[dp];
+                dp++;
+                fontStyleDefRec.FontDefIndex = data[dp];
+                dp++;
+                fontStyleDefRec.CharStyle = data[dp];
+                Console.WriteLine("FontStyleDefRec.FontDefIndex = {0}, CharStyle = {1}", fontStyleDefRec.FontDefIndex, fontStyleDefRec.CharStyle);
+            }
+            else if (data[dp] == MTEFConst.REC_SIZE_FULL
+            ||       data[dp] == MTEFConst.REC_SIZE
+            ||       data[dp] == MTEFConst.REC_SIZE_SUB
+            ||       data[dp] == MTEFConst.REC_SIZE_SUB2
+            ||       data[dp] == MTEFConst.REC_SIZE_SYM
+            ||       data[dp] == MTEFConst.REC_SIZE_SUBSYM)
+            {
+                Objects.Add(new ObjectListRecord());
+                ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
+                objListRec.RecType = data[dp];
+                Console.WriteLine("Size record added");
+            }
+            else if (data[dp] == MTEFConst.REC_LINE)
+            {
+                Objects.Add(new ObjectListRecord());
+                ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
+                objListRec.RecType = data[dp];
+                dp++;
+                objListRec.Option = data[dp];
+                if (parentObjListPtr != null)
+                {
+                    objListRec.ParentRec = parentObjListPtr;
+                }
+                if (data[dp] != MTEFConst.mtfeOPT_LINE_NULL)
+                {
+                    parentObjListPtr = objListRec;
+                }
+                Console.WriteLine("Line record added");
+            }
+            else if (data[dp] == MTEFConst.REC_TMPL)
+            {
+                Objects.Add(new ObjectListRecord());
+                ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
+                objListRec.RecType = data[dp];
+                dp++;
+                objListRec.Option = data[dp];
+                dp++;
+                objListRec.Selector = data[dp];
+                dp++;
+                objListRec.Variation = data[dp];
+                dp++;
+                objListRec.TempSpecOpt = data[dp];
+                if (parentObjListPtr != null)
+                {
+                    objListRec.ParentRec = parentObjListPtr;
+                }
+                parentObjListPtr = objListRec;
+            }
+            else if (data[dp] == MTEFConst.REC_CHAR)
+            {
+                Objects.Add(new ObjectListRecord());
+                ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
+                objListRec.RecType = data[dp];
+                dp++;
+                objListRec.Option = data[dp];
+                dp++;
+                // typeface
+                objListRec.Selector = data[dp];
+                if (objListRec.Option == 0x00)
+                {
+                    dp++;
+                    objListRec.Variation = data[dp];
+                    objListRec.VariationStr = Encoding.ASCII.GetString(data, dp, 1);
+                    dp++; //skip lower byte
+                    Console.WriteLine("Variation = {0:X2}, VariationStr = {1}", objListRec.Variation, objListRec.VariationStr);
+                }
+                else if (objListRec.Option == MTEFConst.mtfeOPT_CHAR_ENC_CHAR_8)
+                {
+                    dp++;
+                    objListRec.VariationStr = Encoding.Unicode.GetString(data, dp, 2);
+                    Console.WriteLine("Variation = \\u{0:X2}{1:X2}, VariationStr = {2}", data[dp + 1], data[dp], objListRec.VariationStr);
+                    dp++; //Skip MTCode
+                    dp++;
+                    objListRec.Variation = data[dp];
+                }
+                if (parentObjListPtr != null)
+                {
+                    objListRec.ParentRec = parentObjListPtr;
+                }
+            }
+            else if (data[dp] == MTEFConst.REC_PILE)
+            {
+                Objects.Add(new ObjectListRecord());
+                ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
+                objListRec.RecType = data[dp];
+                dp++;
+                objListRec.Option = data[dp];
+                dp++;
+                objListRec.HAlign = data[dp]; //halign
+                dp++;
+                objListRec.VAlign = data[dp]; //valign
+                if (parentObjListPtr != null)
+                {
+                    objListRec.ParentRec = parentObjListPtr;
+                }
+                parentObjListPtr = objListRec;
+                Console.WriteLine("Pile record added");
+            }
+            else if (data[dp] == MTEFConst.REC_MATRIX)
+            {
+                Objects.Add(new ObjectListRecord());
+                ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
+                objListRec.RecType = data[dp];
+                dp++;
+                objListRec.Option = data[dp];
+                dp++;
+                objListRec.VAlign = data[dp]; //valign
+                dp++;
+                objListRec.HJust = data[dp];  //h_just
+                dp++;
+                objListRec.VJust = data[dp];  //v_just
+                if (parentObjListPtr != null)
+                {
+                    objListRec.ParentRec = parentObjListPtr;
+                }
+                parentObjListPtr = objListRec;
+                Console.WriteLine("Matrix record added");
+            }
+            else if (data[dp] == MTEFConst.REC_END)
+            {
+
             }
             else return;
 

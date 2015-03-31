@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduConvEquation", "EduConvEquation\EduConvEquation.csproj", "{758FDC05-3434-49D9-8143-C4446758A007}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduConvEquationApp", "EduConvEquationApp\EduConvEquationApp.csproj", "{311182E1-6118-4021-BF6C-9C731AA1FB2F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{758FDC05-3434-49D9-8143-C4446758A007} = {758FDC05-3434-49D9-8143-C4446758A007}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -150,6 +150,35 @@ namespace EduConvEquation
         }
     }
 
+    public class FontStyleDefRecord : AbstractRecord
+    {
+        private byte fontDefIndex;
+        private byte charStyle;
+
+        public byte FontDefIndex
+        {
+            get
+            {
+                return fontDefIndex;
+            }
+            set
+            {
+                fontDefIndex = value;
+            }
+        }
+        public byte CharStyle
+        {
+            get
+            {
+                return charStyle;
+            }
+            set
+            {
+                charStyle = value;
+            }
+        }
+    }
+
     public class DimArray
     {
         private string size;
@@ -275,6 +304,7 @@ namespace EduConvEquation
                     unitYN = true;
                 }
                 else {
+                    if (upperNibble == 0xF0 && lowerNibble == 0x00) { unitYN = false; dataPos++; break; }
                     makeNibbleData(0, lowerNibble, unitYN, totCnt);
                     unitYN = false;
                 }
@@ -313,6 +343,7 @@ namespace EduConvEquation
                 }
                 else
                 {
+                    if (upperNibble == 0xF0 && lowerNibble == 0x00) { unitYN = false; dataPos++; break; }
                     makeNibbleData(1, lowerNibble, unitYN, totCnt);
                     unitYN = false;
                 }
@@ -328,20 +359,23 @@ namespace EduConvEquation
             StyleCnt = data[dataPos];
             dataPos++;
             totCnt = 0;
-            unitYN = true;
+            unitYN = false;
             while (totCnt < styleCnt)
             {
                 if (data[dataPos] == 0x00)
                     break;
 
+                //Console.WriteLine("{0:X2} {1:X2}", data[dataPos], data[dataPos + 1]);
                 StyleArr[totCnt].Size = data[dataPos].ToString();
                 dataPos++;
 
                 StyleArr[totCnt].Unit = data[dataPos];
                 dataPos++;
+
                 totCnt++;
             }
-            Console.WriteLine("Style Cnt = {0}", totCnt);
+            Console.WriteLine("Style Cnt = {0}, Tot Cnt = {1}", styleCnt, totCnt);
+            if (styleCnt == totCnt) dataPos--;
             foreach (DimArray size in StyleArr)
             {
                 Console.WriteLine("Style = {0}, Unit = {1}", size.Size, size.Unit);
@@ -465,6 +499,155 @@ namespace EduConvEquation
                         SpaceArr[idx].Size += "-";
                     }
                 }
+            }
+        }
+    }
+
+    public class ObjectListRecord : AbstractRecord
+    {
+        private AbstractRecord prevRec = null;
+        private AbstractRecord nextRec = null;
+        private AbstractRecord parentRec = null;
+        private AbstractRecord childRec = null;
+        private byte selector;
+        private byte variation;
+        private byte tempSpecOpt;
+        private string variationStr;
+        private byte halign;
+        private byte valign;
+        private byte hjust;
+        private byte vjust;
+
+        public AbstractRecord PrevRec
+        {
+            get
+            {
+                return prevRec;
+            }
+            set
+            {
+                prevRec = value;
+            }
+        }
+        public AbstractRecord NextRec
+        {
+            get
+            {
+                return nextRec;
+            }
+            set
+            {
+                nextRec = value;
+            }
+        }
+        public AbstractRecord ParentRec
+        {
+            get
+            {
+                return parentRec;
+            }
+            set
+            {
+                parentRec = value;
+            }
+        }
+        public AbstractRecord ChildRec
+        {
+            get
+            {
+                return childRec;
+            }
+            set
+            {
+                childRec = value;
+            }
+        }
+        public byte Selector
+        {
+            get
+            {
+                return selector;
+            }
+            set
+            {
+                selector = value;
+            }
+        }
+        public byte Variation
+        {
+            get
+            {
+                return variation;
+            }
+            set
+            {
+                variation = value;
+            }
+        }
+        public byte TempSpecOpt
+        {
+            get
+            {
+                return tempSpecOpt;
+            }
+            set
+            {
+                tempSpecOpt = value;
+            }
+        }
+        public string VariationStr
+        {
+            get
+            {
+                return variationStr;
+            }
+            set
+            {
+                variationStr = value;
+            }
+        }
+        public byte HAlign
+        {
+            get
+            {
+                return halign;
+            }
+            set
+            {
+                halign = value;
+            }
+        }
+        public byte VAlign
+        {
+            get
+            {
+                return valign;
+            }
+            set
+            {
+                valign = value;
+            }
+        }
+        public byte HJust
+        {
+            get
+            {
+                return hjust;
+            }
+            set
+            {
+                hjust = value;
+            }
+        }
+        public byte VJust
+        {
+            get
+            {
+                return vjust;
+            }
+            set
+            {
+                vjust = value;
             }
         }
     }

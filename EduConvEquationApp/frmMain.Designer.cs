@@ -31,7 +31,14 @@
             this.btnCall = new System.Windows.Forms.Button();
             this.lblResult = new System.Windows.Forms.Label();
             this.ofdFile = new System.Windows.Forms.OpenFileDialog();
-            this.label1 = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.btnCheck = new System.Windows.Forms.Button();
+            this.lvwFiles = new System.Windows.Forms.ListView();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.fbdDir = new System.Windows.Forms.FolderBrowserDialog();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // btnCall
@@ -60,25 +67,78 @@
             this.ofdFile.Filter = "Source File (*.gif)|*.gif";
             this.ofdFile.Title = "Source File";
             // 
-            // label1
+            // textBox1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(142, 87);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(38, 12);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "label1";
+            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox1.Location = new System.Drawing.Point(144, 58);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(795, 21);
+            this.textBox1.TabIndex = 2;
+            // 
+            // btnCheck
+            // 
+            this.btnCheck.AutoEllipsis = true;
+            this.btnCheck.Location = new System.Drawing.Point(24, 115);
+            this.btnCheck.Name = "btnCheck";
+            this.btnCheck.Size = new System.Drawing.Size(89, 37);
+            this.btnCheck.TabIndex = 3;
+            this.btnCheck.Text = "Check Files";
+            this.btnCheck.UseVisualStyleBackColor = true;
+            this.btnCheck.Click += new System.EventHandler(this.btnCheck_Click);
+            // 
+            // lvwFiles
+            // 
+            this.lvwFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lvwFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader2});
+            this.lvwFiles.FullRowSelect = true;
+            this.lvwFiles.GridLines = true;
+            this.lvwFiles.ImeMode = System.Windows.Forms.ImeMode.Off;
+            this.lvwFiles.LabelWrap = false;
+            this.lvwFiles.Location = new System.Drawing.Point(144, 115);
+            this.lvwFiles.Name = "lvwFiles";
+            this.lvwFiles.Size = new System.Drawing.Size(781, 368);
+            this.lvwFiles.TabIndex = 4;
+            this.lvwFiles.UseCompatibleStateImageBehavior = false;
+            this.lvwFiles.View = System.Windows.Forms.View.Details;
+            this.lvwFiles.SelectedIndexChanged += new System.EventHandler(this.lvwFiles_SelectedIndexChanged);
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "GIF Name";
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "Result";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(12, 158);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(126, 127);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox1.TabIndex = 5;
+            this.pictureBox1.TabStop = false;
             // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(341, 111);
-            this.Controls.Add(this.label1);
+            this.ClientSize = new System.Drawing.Size(963, 509);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.lvwFiles);
+            this.Controls.Add(this.btnCheck);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.lblResult);
             this.Controls.Add(this.btnCall);
             this.Name = "frmMain";
             this.Text = "DLL테스트";
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -89,7 +149,13 @@
         private System.Windows.Forms.Button btnCall;
         private System.Windows.Forms.Label lblResult;
         private System.Windows.Forms.OpenFileDialog ofdFile;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button btnCheck;
+        private System.Windows.Forms.ListView lvwFiles;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.FolderBrowserDialog fbdDir;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

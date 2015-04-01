@@ -207,8 +207,18 @@ namespace EduConvEquation
                 fontStyleDefRec.CharStyle = data[dp];
                 Console.WriteLine("FontStyleDefRec.FontDefIndex = {0}, CharStyle = {1}", fontStyleDefRec.FontDefIndex, fontStyleDefRec.CharStyle);
             }
+            else if (data[dp] == MTEFConst.REC_SIZE)
+            {
+                Objects.Add(new ObjectListRecord());
+                ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
+                objListRec.RecType = data[dp];
+                dp++;
+                objListRec.Selector = data[dp];
+                dp++;
+                objListRec.Variation = data[dp];
+                Console.WriteLine("Size record added..{0:X2}", objListRec.RecType);
+            }
             else if (data[dp] == MTEFConst.REC_SIZE_FULL
-            ||       data[dp] == MTEFConst.REC_SIZE
             ||       data[dp] == MTEFConst.REC_SIZE_SUB
             ||       data[dp] == MTEFConst.REC_SIZE_SUB2
             ||       data[dp] == MTEFConst.REC_SIZE_SYM
@@ -217,7 +227,7 @@ namespace EduConvEquation
                 Objects.Add(new ObjectListRecord());
                 ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
                 objListRec.RecType = data[dp];
-                Console.WriteLine("Size record added");
+                Console.WriteLine("Size record added..{0:X2}", objListRec.RecType);
             }
             else if (data[dp] == MTEFConst.REC_LINE)
             {
@@ -230,9 +240,25 @@ namespace EduConvEquation
                 {
                     objListRec.ParentRec = parentObjListPtr;
                 }
-                if (data[dp] != MTEFConst.mtfeOPT_LINE_NULL)
+                if (data[dp] == 0x00 )
                 {
                     parentObjListPtr = objListRec;
+                }
+                else if (data[dp] == MTEFConst.mtfeOPT_LINE_LSPACE)
+                {
+                    dp++;
+                    objListRec.Selector = data[dp];
+                    dp++;
+                    objListRec.Variation = data[dp];
+                }
+                else if (objListRec.Option == MTEFConst.mtfeOPT_LP_RULER)
+                {
+                    dp++;
+                    objListRec.RulerRec.RecType = data[dp];
+                    dp++;
+                    objListRec.RulerRec.NStop = data[dp];
+                    dp++;
+                    objListRec.RulerRec.TabStopList = data[dp];
                 }
                 Console.WriteLine("Line record added");
             }
@@ -249,6 +275,7 @@ namespace EduConvEquation
                 objListRec.Variation = data[dp];
                 dp++;
                 objListRec.TempSpecOpt = data[dp];
+                Console.WriteLine("TEMPL Record Added {0:X2}, {1:X2}, {2:X2}, {3:X2}", objListRec.Option, objListRec.Selector, objListRec.Variation, objListRec.TempSpecOpt);
                 if (parentObjListPtr != null)
                 {
                     objListRec.ParentRec = parentObjListPtr;
@@ -269,14 +296,28 @@ namespace EduConvEquation
                 {
                     dp++;
                     objListRec.Variation = data[dp];
-                    objListRec.VariationStr = Encoding.ASCII.GetString(data, dp, 1);
+                    objListRec.VariationStr = UnicodeToString(data, dp, 2);
                     dp++; //skip lower byte
                     Console.WriteLine("Variation = {0:X2}, VariationStr = {1}", objListRec.Variation, objListRec.VariationStr);
+                }
+                else if (objListRec.Option == MTEFConst.mtfeOPT_CHAR_EMBELL)
+                {
+                    dp++;
+                    objListRec.Variation = data[dp];
+                    objListRec.VariationStr = UnicodeToString(data, dp, 2);
+                    dp++; //skip lower byte
+                    dp++;
+                    objListRec.EmbellRec.RecType = data[dp];
+                    dp++;
+                    objListRec.EmbellRec.Option = data[dp];
+                    dp++;
+                    objListRec.EmbellRec.Embell = data[dp];
+                    Console.WriteLine("Variation = {0:X2}, VariationStr = {1}, Embell = {2:X2}", objListRec.Variation, objListRec.VariationStr, objListRec.EmbellRec.Embell);
                 }
                 else if (objListRec.Option == MTEFConst.mtfeOPT_CHAR_ENC_CHAR_8)
                 {
                     dp++;
-                    objListRec.VariationStr = Encoding.Unicode.GetString(data, dp, 2);
+                    objListRec.VariationStr = UnicodeToString(data, dp, 2);
                     Console.WriteLine("Variation = \\u{0:X2}{1:X2}, VariationStr = {2}", data[dp + 1], data[dp], objListRec.VariationStr);
                     dp++; //Skip MTCode
                     dp++;
@@ -298,6 +339,15 @@ namespace EduConvEquation
                 objListRec.HAlign = data[dp]; //halign
                 dp++;
                 objListRec.VAlign = data[dp]; //valign
+                if (objListRec.Option == MTEFConst.mtfeOPT_LP_RULER)
+                {
+                    dp++;
+                    objListRec.RulerRec.RecType = data[dp];
+                    dp++;
+                    objListRec.RulerRec.NStop = data[dp];
+                    dp++;
+                    objListRec.RulerRec.TabStopList = data[dp];
+                }
                 if (parentObjListPtr != null)
                 {
                     objListRec.ParentRec = parentObjListPtr;
@@ -336,6 +386,31 @@ namespace EduConvEquation
             {
                 parseMTEFRecords(data, dp);
             }
+        }
+
+        private string UnicodeToString(byte[] data, int dataPos, int length)
+        {
+            bool comp = false;
+            comp |= CompareBytes(data, dataPos, MTEFConst.spc1);
+            comp |= CompareBytes(data, dataPos, MTEFConst.spc2);
+            comp |= CompareBytes(data, dataPos, MTEFConst.spc3);
+            comp |= CompareBytes(data, dataPos, MTEFConst.spc4);
+            if (comp)
+                return " ";
+            else
+                return Encoding.Unicode.GetString(data, dataPos, length);
+        }
+
+        private bool CompareBytes(byte[] src, int dataPos, byte[] comp)
+        {
+            for (int i = 0; i < comp.Length; i++)
+            {
+                if (src[dataPos + i] != comp[i])
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private string ByteToString(byte[] data, ref int dataPos)

@@ -71,6 +71,12 @@ namespace EduConvEquation
         public const byte mtfeCOLOR_SPOT             = 0x02;
         public const byte mtfeCOLOR_NAME             = 0x04;
 
+        // Force space convert
+        public static readonly byte[] spc1 = new byte[] { 0x02, 0xEF };
+        public static readonly byte[] spc2 = new byte[] { 0x05, 0x00 };
+        public static readonly byte[] spc3 = new byte[] { 0x00, 0xF7 };
+        public static readonly byte[] spc4 = new byte[] { 0x08, 0xEF };
+
     }
 
     public abstract class AbstractRecord
@@ -146,6 +152,35 @@ namespace EduConvEquation
             set
             {
                 fontName = value;
+            }
+        }
+    }
+
+    public class RulerRecord : AbstractRecord
+    {
+        private byte nStop;
+        private byte tabStopList;
+
+        public byte NStop
+        {
+            get
+            {
+                return nStop;
+            }
+            set
+            {
+                nStop = value;
+            }
+        }
+        public byte TabStopList
+        {
+            get
+            {
+                return tabStopList;
+            }
+            set
+            {
+                tabStopList = value;
             }
         }
     }
@@ -503,6 +538,22 @@ namespace EduConvEquation
         }
     }
 
+    public class EmbellRecord : AbstractRecord
+    {
+        private byte embell;
+        public byte Embell
+        {
+            get
+            {
+                return embell;
+            }
+            set
+            {
+                embell = value;
+            }
+        }
+    }
+
     public class ObjectListRecord : AbstractRecord
     {
         private AbstractRecord prevRec = null;
@@ -517,6 +568,8 @@ namespace EduConvEquation
         private byte valign;
         private byte hjust;
         private byte vjust;
+        private EmbellRecord embellRec = new EmbellRecord();
+        private RulerRecord rulerRec = new RulerRecord();
 
         public AbstractRecord PrevRec
         {
@@ -648,6 +701,20 @@ namespace EduConvEquation
             set
             {
                 vjust = value;
+            }
+        }
+        public EmbellRecord EmbellRec
+        {
+            get
+            {
+                return embellRec;
+            }
+        }
+        public RulerRecord RulerRec
+        {
+            get
+            {
+                return rulerRec;
             }
         }
     }

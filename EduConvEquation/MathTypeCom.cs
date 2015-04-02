@@ -55,6 +55,7 @@ namespace EduConvEquation
         public const byte REC_FONT_DEF       = 0x11;
         public const byte REC_EQN_PREFS      = 0x12;
         public const byte REC_ENCODING_DEF   = 0x13;
+        public const byte REC_FUTURE         = 0x64;
 
         // Record Option
         public const byte mtfeOPT_NUDGE = 0x08;
@@ -122,6 +123,119 @@ namespace EduConvEquation
             set
             {
                 encName = value;
+            }
+        }
+    }
+
+    public class ColorDefRecord : AbstractRecord
+    {
+        private byte color1H;
+        private byte color1L;
+        private byte color2H;
+        private byte color2L;
+        private byte color3H;
+        private byte color3L;
+        private byte color4H;
+        private byte color4L;
+        private string colorName;
+
+        public byte Color1H
+        {
+            get
+            {
+                return color1H;
+            }
+            set
+            {
+                color1H = value;
+            }
+        }
+        public byte Color1L
+        {
+            get
+            {
+                return color1L;
+            }
+            set
+            {
+                color1L = value;
+            }
+        }
+        public byte Color2H
+        {
+            get
+            {
+                return color2H;
+            }
+            set
+            {
+                color2H = value;
+            }
+        }
+        public byte Color2L
+        {
+            get
+            {
+                return color2L;
+            }
+            set
+            {
+                color2L = value;
+            }
+        }
+        public byte Color3H
+        {
+            get
+            {
+                return color3H;
+            }
+            set
+            {
+                color3H = value;
+            }
+        }
+        public byte Color3L
+        {
+            get
+            {
+                return color3L;
+            }
+            set
+            {
+                color3L = value;
+            }
+        }
+        public byte Color4H
+        {
+            get
+            {
+                return color4H;
+            }
+            set
+            {
+                color4H = value;
+            }
+        }
+        public byte Color4L
+        {
+            get
+            {
+                return color4L;
+            }
+            set
+            {
+                color4L = value;
+            }
+        }
+        public string ColorName
+        {
+            get
+            {
+                return colorName;
+            }
+            set
+            {
+                colorName = value;
             }
         }
     }
@@ -561,6 +675,8 @@ namespace EduConvEquation
         private AbstractRecord parentRec = null;
         private AbstractRecord childRec = null;
         private byte selector;
+        private byte nudgeDX;
+        private byte nudgeDY;
         private byte variation;
         private byte tempSpecOpt;
         private string variationStr;
@@ -624,6 +740,28 @@ namespace EduConvEquation
             set
             {
                 selector = value;
+            }
+        }
+        public byte NudgeDX
+        {
+            get
+            {
+                return nudgeDX;
+            }
+            set
+            {
+                nudgeDX = value;
+            }
+        }
+        public byte NudgeDY
+        {
+            get
+            {
+                return nudgeDY;
+            }
+            set
+            {
+                nudgeDY = value;
             }
         }
         public byte Variation

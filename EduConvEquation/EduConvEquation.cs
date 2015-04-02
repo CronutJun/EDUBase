@@ -186,6 +186,52 @@ namespace EduConvEquation
                 fontDefRec.FontName = ByteToString(data, ref dp);
                 Console.WriteLine("IndexOfEnd = {0}, FontName = {1}, dataPos = {2}", fontDefRec.IndexOfEnc, fontDefRec.FontName, dp);
             }
+            else if (data[dp] == MTEFConst.REC_COLOR)
+            {
+                dp++;
+                if (data[dp] != 0x00)
+                {
+                    byte H = data[dp];
+                    dp++;
+                    byte L = data[dp];
+                    dp++;
+                    dp++; // 0x00
+                    H = data[dp];
+                    dp++;
+                    L = data[dp];
+                    dp++;
+                }
+                Console.WriteLine("Color Record Skip");
+            }
+            else if (data[dp] == MTEFConst.REC_COLOR_DEF)
+            {
+                Objects.Add(new ColorDefRecord());
+                ColorDefRecord colorDefRec = (ColorDefRecord)Objects.Last<AbstractRecord>();
+                colorDefRec.RecType = data[dp];
+                dp++;
+                colorDefRec.Option = data[dp];
+                dp++;
+                colorDefRec.Color1H = data[dp];
+                dp++;
+                colorDefRec.Color1L = data[dp];
+                dp++;
+                colorDefRec.Color2H = data[dp];
+                dp++;
+                colorDefRec.Color2L = data[dp];
+                dp++;
+                colorDefRec.Color3H = data[dp];
+                dp++;
+                colorDefRec.Color3L = data[dp];
+                if (colorDefRec.Option == MTEFConst.mtfeCOLOR_CMYK)
+                {
+                    dp++;
+                    colorDefRec.Color4H = data[dp];
+                    dp++;
+                    colorDefRec.Color4L = data[dp];
+                }
+                colorDefRec.ColorName = ByteToString(data, ref dp);
+                Console.WriteLine("ColorName = {0}, dataPos = {1}", colorDefRec.ColorName, dp);
+            }
             else if (data[dp] == MTEFConst.REC_EQN_PREFS)
             {
                 Objects.Add(new EqnPrefsRecord());
@@ -214,8 +260,29 @@ namespace EduConvEquation
                 objListRec.RecType = data[dp];
                 dp++;
                 objListRec.Selector = data[dp];
-                dp++;
-                objListRec.Variation = data[dp];
+                if (objListRec.Selector == 0x64) // 100
+                {
+                    dp++;
+                    objListRec.Variation = data[dp]; //lSize
+                    dp++;
+                    // DSize 16-bit Integer  (2byte)
+                    objListRec.HAlign = data[dp];
+                    dp++;
+                    objListRec.VAlign = data[dp];
+                }
+                else if (objListRec.Selector == 0x65) // 101
+                {
+                    // Point size 16-bit Integer (2byte)
+                    dp++;
+                    objListRec.HAlign = data[dp];
+                    dp++;
+                    objListRec.VAlign = data[dp];
+                }
+                else
+                {
+                    dp++;
+                    objListRec.Variation = data[dp];
+                }
                 Console.WriteLine("Size record added..{0:X2}", objListRec.RecType);
             }
             else if (data[dp] == MTEFConst.REC_SIZE_FULL
@@ -259,6 +326,7 @@ namespace EduConvEquation
                     objListRec.RulerRec.NStop = data[dp];
                     dp++;
                     objListRec.RulerRec.TabStopList = data[dp];
+                    dp++; // make integer length
                 }
                 Console.WriteLine("Line record added");
             }
@@ -294,6 +362,18 @@ namespace EduConvEquation
                 objListRec.Selector = data[dp];
                 if (objListRec.Option == 0x00)
                 {
+                    dp++;
+                    objListRec.Variation = data[dp];
+                    objListRec.VariationStr = UnicodeToString(data, dp, 2);
+                    dp++; //skip lower byte
+                    Console.WriteLine("Variation = {0:X2}, VariationStr = {1}", objListRec.Variation, objListRec.VariationStr);
+                }
+                else if (objListRec.Option == MTEFConst.mtfeOPT_NUDGE)
+                {
+                    dp++;
+                    objListRec.NudgeDX = data[dp];
+                    dp++;
+                    objListRec.NudgeDY = data[dp];
                     dp++;
                     objListRec.Variation = data[dp];
                     objListRec.VariationStr = UnicodeToString(data, dp, 2);
@@ -347,6 +427,7 @@ namespace EduConvEquation
                     objListRec.RulerRec.NStop = data[dp];
                     dp++;
                     objListRec.RulerRec.TabStopList = data[dp];
+                    dp++; // make integer length
                 }
                 if (parentObjListPtr != null)
                 {
@@ -374,6 +455,17 @@ namespace EduConvEquation
                 }
                 parentObjListPtr = objListRec;
                 Console.WriteLine("Matrix record added");
+            }
+            else if (data[dp] == MTEFConst.REC_EMBELL)
+            {
+                Objects.Add(new EmbellRecord());
+                EmbellRecord embellRec = (EmbellRecord)Objects.Last<AbstractRecord>();
+                embellRec.RecType = data[dp];
+                dp++;
+                embellRec.Option = data[dp];
+                dp++;
+                embellRec.Embell = data[dp];
+                Console.WriteLine("Embell record added");
             }
             else if (data[dp] == MTEFConst.REC_END)
             {

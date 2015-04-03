@@ -320,13 +320,17 @@ namespace EduConvEquation
                 }
                 else if (objListRec.Option == MTEFConst.mtfeOPT_LP_RULER)
                 {
-                    dp++;
-                    objListRec.RulerRec.RecType = data[dp];
+                    //dp++;
+                    //objListRec.RulerRec.RecType = data[dp];
                     dp++;
                     objListRec.RulerRec.NStop = data[dp];
-                    dp++;
-                    objListRec.RulerRec.TabStopList = data[dp];
-                    dp++; // make integer length
+                    for (int i = 0; i < (int)objListRec.RulerRec.NStop; i++)
+                    {
+                        dp++; // tab-stop type
+                        dp++; // Offset (integer)
+                        objListRec.RulerRec.TabStopList = data[dp];
+                        dp++;
+                    }
                 }
                 Console.WriteLine("Line record added");
             }
@@ -421,13 +425,17 @@ namespace EduConvEquation
                 objListRec.VAlign = data[dp]; //valign
                 if (objListRec.Option == MTEFConst.mtfeOPT_LP_RULER)
                 {
-                    dp++;
-                    objListRec.RulerRec.RecType = data[dp];
+                    //dp++;
+                    //objListRec.RulerRec.RecType = data[dp];
                     dp++;
                     objListRec.RulerRec.NStop = data[dp];
-                    dp++;
-                    objListRec.RulerRec.TabStopList = data[dp];
-                    dp++; // make integer length
+                    for (int i = 0; i < (int)objListRec.RulerRec.NStop; i++)
+                    {
+                        dp++; // tab-stop type
+                        dp++; // Offset (integer)
+                        objListRec.RulerRec.TabStopList = data[dp];
+                        dp++;
+                    }
                 }
                 if (parentObjListPtr != null)
                 {

@@ -90,7 +90,7 @@ namespace EduConvEquationApp
                 i++;
             }
 
-            xlBook.SaveAs(String.Format("{0}\\cshart-Excel.xls", System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)), Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+            xlBook.SaveAs(String.Format("{0}\\csharp-Excel.xls", System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)), Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
             xlBook.Close(true, misValue, misValue);
             xlApp.Quit();
 

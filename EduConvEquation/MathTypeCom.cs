@@ -82,8 +82,47 @@ namespace EduConvEquation
 
     public abstract class AbstractRecord
     {
+        private AbstractRecord prevRec = null;
+        private AbstractRecord nextRec = null;
+        private AbstractRecord parentRec = null;
         private byte recType;
         private byte option;
+
+        public AbstractRecord PrevRec
+        {
+            get
+            {
+                return prevRec;
+            }
+            set
+            {
+                prevRec = value;
+            }
+        }
+
+        public AbstractRecord NextRec
+        {
+            get
+            {
+                return nextRec;
+            }
+            set
+            {
+                nextRec = value;
+            }
+        }
+
+        public AbstractRecord ParentRec
+        {
+            get
+            {
+                return parentRec;
+            }
+            set
+            {
+                parentRec = value;
+            }
+        }
 
         public byte RecType
         {
@@ -655,6 +694,30 @@ namespace EduConvEquation
     public class EmbellRecord : AbstractRecord
     {
         private byte embell;
+        private byte nudgeDX;
+        private byte nudgeDY;
+        public byte NudgeDX
+        {
+            get
+            {
+                return nudgeDX;
+            }
+            set
+            {
+                nudgeDX = value;
+            }
+        }
+        public byte NudgeDY
+        {
+            get
+            {
+                return nudgeDY;
+            }
+            set
+            {
+                nudgeDY = value;
+            }
+        }
         public byte Embell
         {
             get
@@ -668,12 +731,49 @@ namespace EduConvEquation
         }
     }
 
+    public class SizeRecord : AbstractRecord
+    {
+        private byte lSize;
+        private Int16 pointSize;
+        private Int16 dSize;
+        public byte LSize
+        {
+            get
+            {
+                return lSize;
+            }
+            set
+            {
+                lSize = value;
+            }
+        }
+        public Int16 PointSize
+        {
+            get
+            {
+                return pointSize;
+            }
+            set
+            {
+                pointSize = value;
+            }
+        }
+        public Int16 DSize
+        {
+            get
+            {
+                return dSize;
+            }
+            set
+            {
+                dSize = value;
+            }
+        }
+    }
+
     public class ObjectListRecord : AbstractRecord
     {
-        private AbstractRecord prevRec = null;
-        private AbstractRecord nextRec = null;
-        private AbstractRecord parentRec = null;
-        private AbstractRecord childRec = null;
+        private List<AbstractRecord> childRecs = new List<AbstractRecord>();
         private byte selector;
         private byte nudgeDX;
         private byte nudgeDY;
@@ -687,48 +787,11 @@ namespace EduConvEquation
         private EmbellRecord embellRec = new EmbellRecord();
         private RulerRecord rulerRec = new RulerRecord();
 
-        public AbstractRecord PrevRec
+        public List<AbstractRecord> ChildRecs
         {
             get
             {
-                return prevRec;
-            }
-            set
-            {
-                prevRec = value;
-            }
-        }
-        public AbstractRecord NextRec
-        {
-            get
-            {
-                return nextRec;
-            }
-            set
-            {
-                nextRec = value;
-            }
-        }
-        public AbstractRecord ParentRec
-        {
-            get
-            {
-                return parentRec;
-            }
-            set
-            {
-                parentRec = value;
-            }
-        }
-        public AbstractRecord ChildRec
-        {
-            get
-            {
-                return childRec;
-            }
-            set
-            {
-                childRec = value;
+                return childRecs;
             }
         }
         public byte Selector

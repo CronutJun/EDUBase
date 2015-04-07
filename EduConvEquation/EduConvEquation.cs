@@ -46,6 +46,7 @@ namespace EduConvEquation
                     Console.WriteLine("Found. position = {0}", findPos);
                     CollectMTEFBlock(fs, findPos + MTEFConst.HEADER_LEN);
                     return FmtToTagStr();
+                    //return FmtToHwpStr(objects.Count > 0 ? objects[0] : null, true);
                 }
                 else
                 {
@@ -99,7 +100,10 @@ namespace EduConvEquation
                     retStr += String.Format("[{0}]", ((ObjectListRecord)rec).ChildRecs.Count);
                 }
                 else if (rec.RecType == MTEFConst.REC_MATRIX)
+                {
                     retStr += "<MATRIX>";
+                    retStr += String.Format("[{0}]", ((ObjectListRecord)rec).ChildRecs.Count);
+                }
                 else if (rec.RecType == MTEFConst.REC_PILE)
                     retStr += "<PILE>";
                 else if (rec.RecType == MTEFConst.REC_RULER)
@@ -125,70 +129,109 @@ namespace EduConvEquation
             return retStr;
         }
 
-        private string FmtToHwpStr(AbstractRecord rec)
+        private string FmtToHwpStr(AbstractRecord rec, bool keepNextRecord)
         {
             string retStr = "";
 
             if (rec == null) return retStr;
 
             if (rec.RecType == MTEFConst.REC_CHAR)
-                retStr += ((ObjectListRecord)rec).VariationStr;
-            else if (rec.RecType == MTEFConst.REC_LINE)
             {
-                retStr += "<LINE>";
-                retStr += String.Format("[{0}]", ((ObjectListRecord)rec).ChildRecs.Count);
+                retStr += ((ObjectListRecord)rec).VariationStr;
             }
+            else if (rec.RecType == MTEFConst.REC_LINE)
+                retStr += "{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs.Count > 0 ? ((ObjectListRecord)rec).ChildRecs[0] : null, true) + "}";
             else if (rec.RecType == MTEFConst.REC_MATRIX)
                 retStr += "<MATRIX>";
             else if (rec.RecType == MTEFConst.REC_PILE)
-                retStr += "<PILE>";
+            {
+                int i = 0;
+                foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
+                {
+                    if( i > 0 )
+                        retStr += "#pile{" + FmtToHwpStr(crec, true);
+                    else
+                        retStr += "pile{" + FmtToHwpStr(crec, true);
+                    i++;
+                }
+                while (i > 0)
+                {
+                    retStr += "}";
+                    i--;
+                }
+            }
             else if (rec.RecType == MTEFConst.REC_RULER)
                 retStr += "<RULER>";
             else if (rec.RecType == MTEFConst.REC_SIZE)
-                retStr += "<SIZE>";
+                retStr += "";
             else if (rec.RecType == MTEFConst.REC_SIZE_FULL)
-                retStr += "<SIZEFULL>";
+                retStr += "";
             else if (rec.RecType == MTEFConst.REC_SIZE_SUB)
-                retStr += "<SIZESUB>";
+                retStr += "";
             else if (rec.RecType == MTEFConst.REC_SIZE_SUB2)
-                retStr += "<SIZESUB2>";
+                retStr += "";
             else if (rec.RecType == MTEFConst.REC_SIZE_SUBSYM)
-                retStr += "<SIZESUBSYM>";
+                retStr += "";
             else if (rec.RecType == MTEFConst.REC_SIZE_SYM)
-                retStr += "<SIZESYM>";
+                retStr += "";
             else if (rec.RecType == MTEFConst.REC_TMPL)
             {
-                AbstractRecord lRec = null;
-                if (((ObjectListRecord)rec).Selector == 0x0B) //Fraction
+                if (((ObjectListRecord)rec).Selector == 0x01) //Parentheses
+                {
+                    if ((((ObjectListRecord)rec).Variation & 0x03) == 0x03)
+                        retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false) + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true) + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[2], false);
+                    else if ((((ObjectListRecord)rec).Variation & 0x01) == 0x01)
+                        retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false) + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true);
+                    else if ((((ObjectListRecord)rec).Variation & 0x02) == 0x02)
+                        retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], false) + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], true);
+                }
+                else if (((ObjectListRecord)rec).Selector == 0x0B) //Fraction
                 {
                     foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
                     {
-                        if (crec != ((ObjectListRecord)crec).ChildRecs.Last<AbstractRecord>())
+                        if (!ReferenceEquals(crec, ((ObjectListRecord)rec).ChildRecs.Last<AbstractRecord>()))
                         {
-                            retStr += FmtToHwpStr(crec) + "over";
+                            retStr += FmtToHwpStr(crec, true) + "over";
                         }
-                        else {
-                            retStr += FmtToHwpStr(crec);
+                        else
+                        {
+                            retStr += FmtToHwpStr(crec, true);
                         }
-                        lRec = crec;
                     }
-                    if (rec.NextRec != null)
-                        return FmtToHwpStr(rec.NextRec);
+                }
+                else if (((ObjectListRecord)rec).Selector == 0x0C) //Under bar
+                {
+                    retStr += "under {";
+                    foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
+                    {
+                        retStr += FmtToHwpStr(crec, true);
+                    }
+                    retStr += "}";
+                }
+                else if (((ObjectListRecord)rec).Selector == 0x25) //Box
+                {
+                    retStr += "box {";
+                    foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
+                    {
+                        retStr += FmtToHwpStr(crec, true);
+                    }
+                    retStr += "}";
                 }
             }
             if (rec is ObjectListRecord)
             {
                 if (((ObjectListRecord)rec).ChildRecs.Count > 0)
                 {
-
+                    if ((rec.RecType == MTEFConst.REC_TMPL || rec.RecType == MTEFConst.REC_PILE) && keepNextRecord)
+                        retStr += FmtToHwpStr(rec.NextRec, true);
                 }
-                else if (rec.NextRec != null)
-                    return FmtToHwpStr(rec.NextRec);
+                else if (keepNextRecord)
+                    retStr += FmtToHwpStr(rec.NextRec, true);
             }
             else
             {
-                if (rec.NextRec != null)
-                    return FmtToHwpStr(rec.NextRec);
+                if (keepNextRecord)
+                    retStr += FmtToHwpStr(rec.NextRec, true);
             }
             return retStr;
         }
@@ -466,7 +509,10 @@ namespace EduConvEquation
                     OpenedObjList.Last<ObjectListRecord>().ChildRecs.Add(objListRec);
                 }
                 if ((objListRec.Option & MTEFConst.mtfeOPT_LINE_NULL) != MTEFConst.mtfeOPT_LINE_NULL)
+                {
                     OpenedObjList.Add(objListRec);
+                    current = null;
+                }
                 if ((objListRec.Option & MTEFConst.mtfeOPT_NUDGE) == MTEFConst.mtfeOPT_NUDGE)
                 {
                     dp++;
@@ -527,7 +573,7 @@ namespace EduConvEquation
                     objListRec.ParentRec = (AbstractRecord)OpenedObjList.Last<ObjectListRecord>();
                     OpenedObjList.Last<ObjectListRecord>().ChildRecs.Add(objListRec);
                 }
-                OpenedObjList.Add(objListRec);
+                OpenedObjList.Add(objListRec); current = null;
             }
             else if (data[dp] == MTEFConst.REC_CHAR)
             {
@@ -629,7 +675,7 @@ namespace EduConvEquation
                     objListRec.ParentRec = (AbstractRecord)OpenedObjList.Last<ObjectListRecord>();
                     OpenedObjList.Last<ObjectListRecord>().ChildRecs.Add(objListRec);
                 }
-                OpenedObjList.Add(objListRec);
+                OpenedObjList.Add(objListRec); current = null;
                 Console.WriteLine("Pile record added");
             }
             else if (data[dp] == MTEFConst.REC_MATRIX)
@@ -649,12 +695,20 @@ namespace EduConvEquation
                 objListRec.HJust = data[dp];  //h_just
                 dp++;
                 objListRec.VJust = data[dp];  //v_just
+                dp++;
+                objListRec.Rows = data[dp];
+                dp++;
+                objListRec.Cols = data[dp];
+                dp++;
+                objListRec.RowParts = data[dp];
+                dp++;
+                objListRec.ColParts = data[dp];
                 if (OpenedObjList.Count > 0)
                 {
                     objListRec.ParentRec = (AbstractRecord)OpenedObjList.Last<ObjectListRecord>();
                     OpenedObjList.Last<ObjectListRecord>().ChildRecs.Add(objListRec);
                 }
-                OpenedObjList.Add(objListRec);
+                OpenedObjList.Add(objListRec); current = null;
                 Console.WriteLine("Matrix record added");
             }
             else if (data[dp] == MTEFConst.REC_EMBELL)
@@ -688,6 +742,7 @@ namespace EduConvEquation
             {
                 if (OpenedObjList.Count > 0)
                 {
+                    current = OpenedObjList.Last<ObjectListRecord>();
                     OpenedObjList.Remove(OpenedObjList.Last<ObjectListRecord>());
                 }
             }

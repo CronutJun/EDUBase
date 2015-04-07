@@ -784,6 +784,10 @@ namespace EduConvEquation
         private byte valign;
         private byte hjust;
         private byte vjust;
+        private byte rows;
+        private byte cols;
+        private byte rowParts;
+        private byte colParts;
         private EmbellRecord embellRec = new EmbellRecord();
         private RulerRecord rulerRec = new RulerRecord();
 
@@ -902,6 +906,50 @@ namespace EduConvEquation
             set
             {
                 vjust = value;
+            }
+        }
+        public byte Rows
+        {
+            get
+            {
+                return rows;
+            }
+            set
+            {
+                rows = value;
+            }
+        }
+        public byte Cols
+        {
+            get
+            {
+                return cols;
+            }
+            set
+            {
+                cols = value;
+            }
+        }
+        public byte RowParts
+        {
+            get
+            {
+                return rowParts;
+            }
+            set
+            {
+                rowParts = value;
+            }
+        }
+        public byte ColParts
+        {
+            get
+            {
+                return colParts;
+            }
+            set
+            {
+                colParts = value;
             }
         }
         public EmbellRecord EmbellRec

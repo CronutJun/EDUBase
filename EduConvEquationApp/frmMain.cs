@@ -42,12 +42,14 @@ namespace EduConvEquationApp
                     ListViewItem lvwItem = new ListViewItem();
                     lvwItem.Text = str;
                     lvwItem.SubItems.Add(".");
+                    lvwItem.SubItems.Add(".");
                     lvwFiles.Items.Add(lvwItem);
                 }
 
                 for (int i = 0; i < lvwFiles.Items.Count; i++)
                 {
                     lvwFiles.Items[i].SubItems[1].Text = eConv.Convert(lvwFiles.Items[i].Text);
+                    lvwFiles.Items[i].SubItems[2].Text = eConv.TagStr;
                     Application.DoEvents();
                 }
                 MessageBox.Show("Finish");
@@ -85,8 +87,12 @@ namespace EduConvEquationApp
             int i = 1;
             foreach (ListViewItem item in lvwFiles.Items)
             {
-                xlSheet.Cells[i, 1] = item.Text;
-                xlSheet.Cells[i, 2] = "'" + item.SubItems[1].Text;
+                xlSheet.Cells[i, 1] = "Image";
+                xlSheet.Cells[i, 2] = item.Text;
+                xlSheet.Cells[i, 3] = "'" + item.SubItems[1].Text;
+                xlSheet.Cells[i, 4] = "'" + item.SubItems[2].Text;
+                Excel.Shape shape = xlSheet.Shapes.AddPicture(item.Text, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoCTrue, xlSheet.Cells[i, 1].left, xlSheet.Cells[i, 1].top, xlSheet.Cells[i, 1].width, xlSheet.Cells[i, 1].height);
+                shape.LockAspectRatio = Microsoft.Office.Core.MsoTriState.msoCTrue;
                 i++;
             }
 

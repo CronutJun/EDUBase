@@ -300,10 +300,27 @@ namespace EduConvEquation
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x17) //Limit
                 {
-                    retStr += "rpile{";
-                    retStr += "`" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs.Last<AbstractRecord>(), true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation);
-                    retStr += "#`" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs.First<AbstractRecord>(), true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation);
-                    retStr += "}";
+                    if (((ObjectListRecord)rec).ChildRecs.Count == 1)
+                    {
+
+                    }
+                    else
+                    {
+                        if (((ObjectListRecord)((ObjectListRecord)rec).ChildRecs[1]).ChildRecs.Count == 0)
+                        {
+                            retStr += "rpile{";
+                            retStr += "`" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[2], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation);
+                            retStr += "#`" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation);
+                            retStr += "}";
+                        }
+                        else
+                        {
+                            retStr += "rpile{";
+                            retStr += "`" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation);
+                            retStr += "#`" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation);
+                            retStr += "}";
+                        }
+                    }
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x1C) //Superscript
                 {

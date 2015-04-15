@@ -543,11 +543,14 @@ namespace EduConvEquation
                     dp++;
                     objListRec.HJust  = data[dp];
                     dp++;
-                    dp++; // 0x00
-                    objListRec.VAlign = data[dp];
-                    dp++;
-                    objListRec.VJust = data[dp];
-                    dp++;
+                    if( objListRec.HJust > 1)
+                    {
+                        dp++; // 0x00
+                        objListRec.VAlign = data[dp];
+                        dp++;
+                        objListRec.VJust = data[dp];
+                        dp++;
+                    }
                     /* Color를 ObjectList로 처리 */
                     if (OpenedObjList.Count > 0)
                     {

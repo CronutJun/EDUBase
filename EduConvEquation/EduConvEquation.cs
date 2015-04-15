@@ -168,7 +168,8 @@ namespace EduConvEquation
                 {
                     if ((((ObjectListRecord)rec).Option & MTEFConst.mtfeOPT_CHAR_EMBELL) == MTEFConst.mtfeOPT_CHAR_EMBELL)
                     {
-                        if (((ObjectListRecord)rec).EmbellRec.Embell == 0x0A)
+                        if (((ObjectListRecord)rec).EmbellRec.Embell == 0x0A
+                        ||  ((ObjectListRecord)rec).EmbellRec.Embell == 0x16)
                             retStr = "{not " + ((ObjectListRecord)rec).VariationStr + "}";
                     }
                     else

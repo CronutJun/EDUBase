@@ -557,7 +557,7 @@ namespace EduConvEquation
                         objListRec.ParentRec = (AbstractRecord)OpenedObjList.Last<ObjectListRecord>();
                         OpenedObjList.Last<ObjectListRecord>().ChildRecs.Add(objListRec);
                     }
-                    OpenedObjList.Add(objListRec);
+                    OpenedObjList.Add(objListRec); current = null;
 
                 }
                 Console.WriteLine("Color Record Skip");
@@ -592,6 +592,7 @@ namespace EduConvEquation
                     dp++;
                     colorDefRec.Color4L = data[dp];
                 }
+                dp++;
                 colorDefRec.ColorName = ByteToString(data, ref dp);
                 Console.WriteLine("ColorName = {0}, dataPos = {1}", colorDefRec.ColorName, dp);
             }

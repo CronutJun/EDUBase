@@ -166,14 +166,21 @@ namespace EduConvEquation
             {
                 if (!((ObjectListRecord)rec).VariationStr.Equals("{") && !((ObjectListRecord)rec).VariationStr.Equals("}"))
                 {
-                    if (((ObjectListRecord)rec).Selector == 0x81)
-                        retStr += "{rm" + ((ObjectListRecord)rec).VariationStr + "}";
+                    if ((((ObjectListRecord)rec).Option & MTEFConst.mtfeOPT_CHAR_EMBELL) == MTEFConst.mtfeOPT_CHAR_EMBELL)
+                    {
+                        if (((ObjectListRecord)rec).EmbellRec.Embell == 0x0A)
+                            retStr = "{not " + ((ObjectListRecord)rec).VariationStr + "}";
+                    }
                     else
-                        retStr += ((ObjectListRecord)rec).VariationStr;
+                    {
+                        retStr = ((ObjectListRecord)rec).VariationStr;
+                    }
+                    if (((ObjectListRecord)rec).Selector == 0x81)
+                        retStr = "{rm " + retStr + "}";
                 }
             }
             else if (rec.RecType == MTEFConst.REC_COLOR)
-                retStr += "";
+                retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation);
             else if (rec.RecType == MTEFConst.REC_COLOR_DEF)
                 retStr += "";
             else if (rec.RecType == MTEFConst.REC_EMBELL)
@@ -217,14 +224,14 @@ namespace EduConvEquation
                 int i = 0;
                 foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
                 {
-                    if( i > 0 )
+                    if (i > 0)
                         retStr += "#" + FmtToHwpStr(crec, true, false, selector, variation);
                     else
                         if (selector == 0x02 && variation == 0x01)
                             retStr += " cases{" + FmtToHwpStr(crec, true, false, selector, variation);
                         else
                         {
-                            if(((ObjectListRecord)rec).HAlign == 0x01)
+                            if (((ObjectListRecord)rec).HAlign == 0x01)
                                 retStr += " lpile{" + FmtToHwpStr(crec, true, false, selector, variation);
                             else if (((ObjectListRecord)rec).HAlign == 0x02)
                                 retStr += " pile{" + FmtToHwpStr(crec, true, false, selector, variation);
@@ -372,6 +379,7 @@ namespace EduConvEquation
                 {
                     if ((rec.RecType == MTEFConst.REC_TMPL 
                        ||rec.RecType == MTEFConst.REC_PILE
+                       ||rec.RecType == MTEFConst.REC_COLOR
                        ||rec.RecType == MTEFConst.REC_MATRIX) && keepNextRecord)
                         retStr += FmtToHwpStr(rec.NextRec, true, false, selector, variation);
                 }
@@ -523,15 +531,31 @@ namespace EduConvEquation
                 dp++;
                 if (data[dp] != 0x00)
                 {
-                    byte H = data[dp];
+                    Objects.Add(new ObjectListRecord());
+                    ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
+                    objListRec.PrevRec = current;
+                    if (current != null)
+                        current.NextRec = objListRec;
+                    current = objListRec;
+                    objListRec.RecType = MTEFConst.REC_COLOR;
+                    objListRec.Option = 0x00;
+                    objListRec.HAlign = data[dp];
                     dp++;
-                    byte L = data[dp];
+                    objListRec.HJust  = data[dp];
                     dp++;
                     dp++; // 0x00
-                    H = data[dp];
+                    objListRec.VAlign = data[dp];
                     dp++;
-                    L = data[dp];
+                    objListRec.VJust = data[dp];
                     dp++;
+                    /* Color를 ObjectList로 처리 */
+                    if (OpenedObjList.Count > 0)
+                    {
+                        objListRec.ParentRec = (AbstractRecord)OpenedObjList.Last<ObjectListRecord>();
+                        OpenedObjList.Last<ObjectListRecord>().ChildRecs.Add(objListRec);
+                    }
+                    OpenedObjList.Add(objListRec);
+
                 }
                 Console.WriteLine("Color Record Skip");
             }
@@ -672,6 +696,13 @@ namespace EduConvEquation
                     objListRec.NudgeDX = data[dp];
                     dp++;
                     objListRec.NudgeDY = data[dp];
+                    if (objListRec.NudgeDX == 0x80 && objListRec.NudgeDY == 0x80)
+                    {
+                        dp++;
+                        dp++;
+                        dp++;
+                        dp++;
+                    }
                 }
                 if ((objListRec.Option & MTEFConst.mtfeOPT_LINE_LSPACE) == MTEFConst.mtfeOPT_LINE_LSPACE)
                 {
@@ -713,6 +744,13 @@ namespace EduConvEquation
                     objListRec.NudgeDX = data[dp];
                     dp++;
                     objListRec.NudgeDY = data[dp];
+                    if (objListRec.NudgeDX == 0x80 && objListRec.NudgeDY == 0x80)
+                    {
+                        dp++;
+                        dp++;
+                        dp++;
+                        dp++;
+                    }
                 }
                 dp++;
                 objListRec.Selector = data[dp];
@@ -739,54 +777,67 @@ namespace EduConvEquation
                 objListRec.RecType = data[dp];
                 dp++;
                 objListRec.Option = data[dp];
-                dp++;
-                // typeface
-                objListRec.Selector = data[dp];
-                if (objListRec.Option == 0x00)
-                {
-                    dp++;
-                    objListRec.Variation = data[dp];
-                    objListRec.VariationStr = UnicodeToString(data, dp, 2);
-                    dp++; //skip lower byte
-                    Console.WriteLine("Variation = {0:X2}, VariationStr = {1}", objListRec.Variation, objListRec.VariationStr);
-                }
                 if ((objListRec.Option & MTEFConst.mtfeOPT_NUDGE) == MTEFConst.mtfeOPT_NUDGE)
                 {
                     dp++;
                     objListRec.NudgeDX = data[dp];
                     dp++;
                     objListRec.NudgeDY = data[dp];
-                    if ((objListRec.Option & MTEFConst.mtfeOPT_CHAR_ENC_CHAR_8) != MTEFConst.mtfeOPT_CHAR_ENC_CHAR_8)
+                    if (objListRec.NudgeDX == 0x80 && objListRec.NudgeDY == 0x80)
                     {
                         dp++;
-                        objListRec.Variation = data[dp];
-                        objListRec.VariationStr = UnicodeToString(data, dp, 2);
-                        dp++; //skip lower byte
-                        Console.WriteLine("Variation = {0:X2}, VariationStr = {1}", objListRec.Variation, objListRec.VariationStr);
+                        dp++;
+                        dp++;
+                        dp++;
                     }
                 }
-                if ((objListRec.Option & MTEFConst.mtfeOPT_CHAR_EMBELL) == MTEFConst.mtfeOPT_CHAR_EMBELL)
+                if ((objListRec.Option & MTEFConst.mtfeOPT_CHAR_ENC_CHAR_8) != MTEFConst.mtfeOPT_CHAR_ENC_CHAR_8)
                 {
+                    // typeface
+                    dp++;
+                    objListRec.Selector = data[dp];
                     dp++;
                     objListRec.Variation = data[dp];
                     objListRec.VariationStr = UnicodeToString(data, dp, 2);
                     dp++; //skip lower byte
-                    dp++;
-                    objListRec.EmbellRec.RecType = data[dp];
-                    dp++;
-                    objListRec.EmbellRec.Option = data[dp];
-                    dp++;
-                    objListRec.EmbellRec.Embell = data[dp];
-                    Console.WriteLine("Variation = {0:X2}, VariationStr = {1}, Embell = {2:X2}", objListRec.Variation, objListRec.VariationStr, objListRec.EmbellRec.Embell);
+                    Console.WriteLine("Variation = {0:X2}, VariationStr = {1}", objListRec.Variation, objListRec.VariationStr);
                 }
-                if ((objListRec.Option & MTEFConst.mtfeOPT_CHAR_ENC_CHAR_8) == MTEFConst.mtfeOPT_CHAR_ENC_CHAR_8)
+                else
                 {
+                    // typeface
+                    dp++;
+                    objListRec.Selector = data[dp];
                     dp++;
                     objListRec.VariationStr = UnicodeToString(data, dp, 2);
                     Console.WriteLine("Variation = \\u{0:X2}{1:X2}, VariationStr = {2}", data[dp + 1], data[dp], objListRec.VariationStr);
                     dp++; //Skip MTCode
                     dp++;
                     objListRec.Variation = data[dp];
+                }
+                if ((objListRec.Option & MTEFConst.mtfeOPT_CHAR_EMBELL) == MTEFConst.mtfeOPT_CHAR_EMBELL)
+                {
+                    dp++;
+                    objListRec.EmbellRec.RecType = data[dp];
+                    dp++;
+                    objListRec.EmbellRec.Option = data[dp];
+                    if ((objListRec.EmbellRec.Option & MTEFConst.mtfeOPT_NUDGE) == MTEFConst.mtfeOPT_NUDGE)
+                    {
+                        dp++;
+                        byte embellNudgeDX = data[dp];
+                        dp++;
+                        byte embellNudgeDY = data[dp];
+                        if (embellNudgeDX == 0x80 && embellNudgeDY == 0x80)
+                        {
+                            dp++;
+                            dp++;
+                            dp++;
+                            dp++;
+                        }
+                    }
+                    dp++;
+                    objListRec.EmbellRec.Embell = data[dp];
+                    dp++;
+                    Console.WriteLine("Variation = {0:X2}, VariationStr = {1}, Embell = {2:X2}", objListRec.Variation, objListRec.VariationStr, objListRec.EmbellRec.Embell);
                 }
                 if (OpenedObjList.Count > 0)
                 {
@@ -921,18 +972,27 @@ namespace EduConvEquation
             bool isNot = false;
             bool isSpace = false;
             bool isHSpace = false;
+            bool isQSpace = false;
+            bool isDHSpace = false;
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc0);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc2);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc3);
-            isNot |= CompareBytes(data, dataPos, MTEFConst.spc4);
-            isSpace |= CompareBytes(data, dataPos, MTEFConst.spc5);
-            isHSpace |= CompareBytes(data, dataPos, MTEFConst.spc1);
+            isNot |= CompareBytes(data, dataPos, MTEFConst.spc7);
+            isHSpace |= CompareBytes(data, dataPos, MTEFConst.spc4);
+            isQSpace |= CompareBytes(data, dataPos, MTEFConst.spc1);
+            isQSpace |= CompareBytes(data, dataPos, MTEFConst.spc5);
+            isQSpace |= CompareBytes(data, dataPos, MTEFConst.spc6);
+            isDHSpace |= CompareBytes(data, dataPos, MTEFConst.spc8);
             if (isNot)
                 return "";
             else if (isSpace)
                 return "~";
             else if (isHSpace)
+                return "``";
+            else if (isQSpace)
                 return "`";
+            else if (isDHSpace)
+                return "~~`";
             else
                 return Encoding.Unicode.GetString(data, dataPos, length);
         }

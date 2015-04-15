@@ -79,6 +79,9 @@ namespace EduConvEquation
         public static readonly byte[] spc3 = new byte[] { 0x00, 0xF7 };
         public static readonly byte[] spc4 = new byte[] { 0x08, 0xEF };
         public static readonly byte[] spc5 = new byte[] { 0x04, 0xEF };
+        public static readonly byte[] spc6 = new byte[] { 0x04, 0x00 };
+        public static readonly byte[] spc7 = new byte[] { 0x02, 0x00 };
+        public static readonly byte[] spc8 = new byte[] { 0x05, 0xEF };
 
     }
 

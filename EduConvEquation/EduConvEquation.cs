@@ -180,7 +180,7 @@ namespace EduConvEquation
                 }
             }
             else if (rec.RecType == MTEFConst.REC_COLOR)
-                retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation);
+                retStr += "";
             else if (rec.RecType == MTEFConst.REC_COLOR_DEF)
                 retStr += "";
             else if (rec.RecType == MTEFConst.REC_EMBELL)
@@ -379,7 +379,6 @@ namespace EduConvEquation
                 {
                     if ((rec.RecType == MTEFConst.REC_TMPL 
                        ||rec.RecType == MTEFConst.REC_PILE
-                       ||rec.RecType == MTEFConst.REC_COLOR
                        ||rec.RecType == MTEFConst.REC_MATRIX) && keepNextRecord)
                         retStr += FmtToHwpStr(rec.NextRec, true, false, selector, variation);
                 }
@@ -529,36 +528,8 @@ namespace EduConvEquation
             else if (data[dp] == MTEFConst.REC_COLOR)
             {
                 dp++;
-                if (data[dp] != 0x00)
+                if (data[dp] != 0x00) // on
                 {
-                    Objects.Add(new ObjectListRecord());
-                    ObjectListRecord objListRec = (ObjectListRecord)Objects.Last<AbstractRecord>();
-                    objListRec.PrevRec = current;
-                    if (current != null)
-                        current.NextRec = objListRec;
-                    current = objListRec;
-                    objListRec.RecType = MTEFConst.REC_COLOR;
-                    objListRec.Option = 0x00;
-                    objListRec.HAlign = data[dp];
-                    dp++;
-                    objListRec.HJust  = data[dp];
-                    dp++;
-                    if( objListRec.HJust > 1)
-                    {
-                        dp++; // 0x00
-                        objListRec.VAlign = data[dp];
-                        dp++;
-                        objListRec.VJust = data[dp];
-                        dp++;
-                    }
-                    /* Color를 ObjectList로 처리 */
-                    if (OpenedObjList.Count > 0)
-                    {
-                        objListRec.ParentRec = (AbstractRecord)OpenedObjList.Last<ObjectListRecord>();
-                        OpenedObjList.Last<ObjectListRecord>().ChildRecs.Add(objListRec);
-                    }
-                    OpenedObjList.Add(objListRec); current = null;
-
                 }
                 Console.WriteLine("Color Record Skip");
             }

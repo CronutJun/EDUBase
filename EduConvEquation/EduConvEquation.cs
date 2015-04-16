@@ -176,7 +176,8 @@ namespace EduConvEquation
                     {
                         retStr = ((ObjectListRecord)rec).VariationStr;
                     }
-                    if (((ObjectListRecord)rec).Selector == 0x81)
+                    if (((ObjectListRecord)rec).Selector == 0x81
+                    ||  ((ObjectListRecord)rec).Selector == 0x82)
                         retStr = "{rm " + retStr + "}";
                 }
             }
@@ -323,6 +324,15 @@ namespace EduConvEquation
                 else if (((ObjectListRecord)rec).Selector == 0x0C) //Under bar
                 {
                     retStr += " under{";
+                    foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
+                    {
+                        retStr += FmtToHwpStr(crec, true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation);
+                    }
+                    retStr += "}";
+                }
+                else if (((ObjectListRecord)rec).Selector == 0x0D) //bar
+                {
+                    retStr += " bar{";
                     foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
                     {
                         retStr += FmtToHwpStr(crec, true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation);
@@ -947,28 +957,28 @@ namespace EduConvEquation
         {
             bool isNot = false;
             bool isSpace = false;
-            bool isHSpace = false;
+            bool isDSpace = false;
             bool isQSpace = false;
-            bool isDHSpace = false;
-            isNot |= CompareBytes(data, dataPos, MTEFConst.spc0);
+            bool isDQSpace = false;
+            isNot |= CompareBytes(data, dataPos, MTEFConst.spc1);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc2);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc3);
-            isNot |= CompareBytes(data, dataPos, MTEFConst.spc7);
-            isHSpace |= CompareBytes(data, dataPos, MTEFConst.spc4);
-            isQSpace |= CompareBytes(data, dataPos, MTEFConst.spc1);
-            isQSpace |= CompareBytes(data, dataPos, MTEFConst.spc5);
-            isQSpace |= CompareBytes(data, dataPos, MTEFConst.spc6);
-            isDHSpace |= CompareBytes(data, dataPos, MTEFConst.spc8);
+            isNot |= CompareBytes(data, dataPos, MTEFConst.spc4);
+            isNot |= CompareBytes(data, dataPos, MTEFConst.spc5);
+            isSpace |= CompareBytes(data, dataPos, MTEFConst.spcS1);
+            isDSpace |= CompareBytes(data, dataPos, MTEFConst.spcS2);
+            isQSpace |= CompareBytes(data, dataPos, MTEFConst.spcQ1);
+            isDQSpace |= CompareBytes(data, dataPos, MTEFConst.spcQ2);
             if (isNot)
                 return "";
             else if (isSpace)
                 return "~";
-            else if (isHSpace)
-                return "``";
+            else if (isDSpace)
+                return "~~";
             else if (isQSpace)
                 return "`";
-            else if (isDHSpace)
-                return "~~`";
+            else if (isDQSpace)
+                return "``";
             else
                 return Encoding.Unicode.GetString(data, dataPos, length);
         }

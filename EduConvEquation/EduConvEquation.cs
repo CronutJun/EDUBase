@@ -73,8 +73,8 @@ namespace EduConvEquation
                 string[] arr = replaced.Split(d);
                 for( int i = 0; i < arr.Length; i++ )
                 {
-                //    Regex r = new Regex("([=<>])");
-                //    arr[i] = r.Replace(arr[i], "&$1", 1);
+                    Regex r = new Regex("([=<>])");
+                    arr[i] = r.Replace(arr[i], "&$1", 1);
                 }
                 replaced = String.Join("#", arr);
             }
@@ -203,7 +203,8 @@ namespace EduConvEquation
                 if (skipBrace)
                     retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation);
                 else
-                    retStr += "{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation) + "}";
+                    //retStr += "{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation) + "}";
+                    retStr += " " + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation) + " ";
             else if (rec.RecType == MTEFConst.REC_MATRIX)
             {
                 int i = 0;

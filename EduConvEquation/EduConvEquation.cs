@@ -73,8 +73,8 @@ namespace EduConvEquation
                 string[] arr = replaced.Split(d);
                 for( int i = 0; i < arr.Length; i++ )
                 {
-                    Regex r = new Regex("([=<>])");
-                    arr[i] = r.Replace(arr[i], "&$1", 1);
+                //    Regex r = new Regex("([=<>])");
+                //    arr[i] = r.Replace(arr[i], "&$1", 1);
                 }
                 replaced = String.Join("#", arr);
             }
@@ -210,12 +210,12 @@ namespace EduConvEquation
                 foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
                 {
                     if (i > 0)
-                        retStr += "#" + FmtToHwpStr(crec, true, false, selector, variation);
+                        retStr += "#" + FmtToHwpStr(crec, false, false, selector, variation);
                     else
                         if (selector == 0x02 && variation == 0x01)
-                            retStr += " cases{" + FmtToHwpStr(crec, true, false, selector, variation);
+                            retStr += " cases{" + FmtToHwpStr(crec, false, false, 0x00, 0x00);
                         else
-                            retStr += " matrix{" + FmtToHwpStr(crec, true, false, selector, variation);
+                            retStr += " matrix{" + FmtToHwpStr(crec, false, false, selector, variation);
                     i++;
                 }
                 if (i > 0)
@@ -227,20 +227,20 @@ namespace EduConvEquation
                 foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
                 {
                     if (i > 0)
-                        retStr += "#" + FmtToHwpStr(crec, true, false, selector, variation);
+                        retStr += "#" + FmtToHwpStr(crec, false, false, selector, variation);
                     else
                         if (selector == 0x02 && variation == 0x01)
-                            retStr += " cases{" + FmtToHwpStr(crec, true, false, selector, variation);
+                            retStr += " cases{" + FmtToHwpStr(crec, false, false, selector, variation);
                         else
                         {
                             if (((ObjectListRecord)rec).HAlign == 0x01)
-                                retStr += " lpile{" + FmtToHwpStr(crec, true, false, selector, variation);
+                                retStr += " lpile{" + FmtToHwpStr(crec, false, false, selector, variation);
                             else if (((ObjectListRecord)rec).HAlign == 0x02)
-                                retStr += " pile{" + FmtToHwpStr(crec, true, false, selector, variation);
+                                retStr += " pile{" + FmtToHwpStr(crec, false, false, selector, variation);
                             else if (((ObjectListRecord)rec).HAlign == 0x03)
-                                retStr += " rpile{" + FmtToHwpStr(crec, true, false, selector, variation);
+                                retStr += " rpile{" + FmtToHwpStr(crec, false, false, selector, variation);
                             else
-                                retStr += " lpile{" + FmtToHwpStr(crec, true, false, selector, variation);
+                                retStr += " lpile{" + FmtToHwpStr(crec, false, false, selector, variation);
                             alignOpt = ((ObjectListRecord)rec).HAlign;
                         }
                     i++;

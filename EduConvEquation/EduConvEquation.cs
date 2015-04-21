@@ -989,8 +989,16 @@ namespace EduConvEquation
                 {
                     if (fontName.Equals("Wingdings 2"))
                     {
-                        data[dataPos] = 0xA0;
-                        data[dataPos + 1] = 0x25;
+                        if (data[dataPos + 2] == 0xA2)
+                        {
+                            data[dataPos] = 0xA0;
+                            data[dataPos + 1] = 0x25;
+                        }
+                        else
+                        {
+                            data[dataPos] = 0xA1;
+                            data[dataPos + 1] = 0x25;
+                        }
                     }
                     else if (fontName.Equals("Wingdings 3"))
                     {

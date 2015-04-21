@@ -873,7 +873,8 @@ namespace EduConvEquation
                     }
                     dp++;
                     objListRec.EmbellRec.Embell = data[dp];
-                    dp++;
+                    if (data[dp+1] == 0x00)
+                        dp++;
                     Console.WriteLine("Variation = {0:X2}, VariationStr = {1}, Embell = {2:X2}", objListRec.Variation, objListRec.VariationStr, objListRec.EmbellRec.Embell);
                 }
                 if (OpenedObjList.Count > 0)
@@ -1049,8 +1050,16 @@ namespace EduConvEquation
                     }
                     else if (fontName.Equals("Wingdings 3"))
                     {
-                        data[dataPos] = 0xB2;
-                        data[dataPos + 1] = 0x25;
+                        if (data[dataPos + 2] == 0x70)
+                        {
+                            data[dataPos] = 0xB2;
+                            data[dataPos + 1] = 0x25;
+                        }
+                        else
+                        {
+                            data[dataPos] = 0xB3;
+                            data[dataPos + 1] = 0x25;
+                        }
                     }
                     else return "";
                 }

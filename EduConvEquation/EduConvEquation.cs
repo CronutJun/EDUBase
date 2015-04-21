@@ -199,9 +199,9 @@ namespace EduConvEquation
                         retStr = trimStr.Length > 0 ? "{rm " + retStr + "}" : retStr;
                     if (trimStr.Length > 0)
                         if (limitType == 1)
-                            retStr = "rpile{~#" + retStr + "}";
+                            retStr = " rpile{~#" + retStr + "}";
                         else if (limitType == 2)
-                            retStr = "rpile{" + retStr + "#~}";
+                            retStr = " rpile{" + retStr + "#~}";
                 }
             }
             else if (rec.RecType == MTEFConst.REC_COLOR)
@@ -981,6 +981,8 @@ namespace EduConvEquation
                 }
                 dp++;
                 embellRec.Embell = data[dp];
+                if (data[dp + 1] == 0x00)
+                    dp++;
                 if (OpenedObjList.Count > 0)
                 {
                     embellRec.ParentRec = (AbstractRecord)OpenedObjList.Last<ObjectListRecord>();

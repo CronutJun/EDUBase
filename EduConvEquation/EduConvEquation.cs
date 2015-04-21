@@ -19,6 +19,7 @@ namespace EduConvEquation
         private bool hasMatrix = false;
         private byte alignOpt = 0x00;
         private string tagStr = "";
+        private String fontName = "";
 
         public List<AbstractRecord> Objects
         {
@@ -203,8 +204,8 @@ namespace EduConvEquation
                 if (skipBrace)
                     retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation);
                 else
-                    //retStr += "{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation) + "}";
-                    retStr += " " + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation) + " ";
+                    retStr += "{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation) + "}";
+            //retStr += " " + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation) + " ";
             else if (rec.RecType == MTEFConst.REC_MATRIX)
             {
                 int i = 0;
@@ -395,12 +396,12 @@ namespace EduConvEquation
                         retStr += FmtToHwpStr(rec.NextRec, true, false, selector, variation);
                 }
                 else if (keepNextRecord)
-                    retStr += FmtToHwpStr(rec.NextRec, true, false, selector, variation);
+                    retStr += FmtToHwpStr(rec.NextRec, true, true, selector, variation);
             }
             else
             {
                 if (keepNextRecord)
-                    retStr += FmtToHwpStr(rec.NextRec, true, false, selector, variation);
+                    retStr += FmtToHwpStr(rec.NextRec, true, true, selector, variation);
             }
             return retStr;
         }
@@ -499,6 +500,7 @@ namespace EduConvEquation
             hasMatrix = false;
             alignOpt = 0x00;
             tagStr = "";
+            fontName = "";
 
             dataPos++;
             parseMTEFRecords(data, dataPos);
@@ -535,6 +537,7 @@ namespace EduConvEquation
                 fontDefRec.IndexOfEnc = data[dp];
                 dp++;
                 fontDefRec.FontName = ByteToString(data, ref dp);
+                fontName = fontDefRec.FontName;
                 Console.WriteLine("IndexOfEnd = {0}, FontName = {1}, dataPos = {2}", fontDefRec.IndexOfEnc, fontDefRec.FontName, dp);
             }
             else if (data[dp] == MTEFConst.REC_COLOR)
@@ -981,7 +984,23 @@ namespace EduConvEquation
             else if (isDQSpace)
                 return "``";
             else
+            {
+                if (data[dataPos] == 0x00 && data[dataPos + 1] == 0xF7)
+                {
+                    if (fontName.Equals("Wingdings 2"))
+                    {
+                        data[dataPos] = 0xA0;
+                        data[dataPos + 1] = 0x25;
+                    }
+                    else if (fontName.Equals("Wingdings 3"))
+                    {
+                        data[dataPos] = 0xB2;
+                        data[dataPos + 1] = 0x25;
+                    }
+                    else return "";
+                }
                 return Encoding.Unicode.GetString(data, dataPos, length);
+            }
         }
 
         private bool CompareBytes(byte[] src, int dataPos, byte[] comp)

@@ -813,8 +813,14 @@ namespace EduConvEquation
         private byte cols;
         private byte rowParts;
         private byte colParts;
+        private int limitCount;
         private EmbellRecord embellRec = new EmbellRecord();
         private RulerRecord rulerRec = new RulerRecord();
+
+        public ObjectListRecord()
+        {
+            limitCount = 0;
+        }
 
         public List<AbstractRecord> ChildRecs
         {
@@ -975,6 +981,17 @@ namespace EduConvEquation
             set
             {
                 colParts = value;
+            }
+        }
+        public int LimitCount
+        {
+            get
+            {
+                return limitCount;
+            }
+            set
+            {
+                limitCount = value;
             }
         }
         public EmbellRecord EmbellRec

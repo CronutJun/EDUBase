@@ -39,7 +39,7 @@ namespace EduConvEquation
 
         public string Convert(string path)
         {
-            if( !File.Exists(path) )
+            if (!File.Exists(path))
                 return "File does not exist.";
             else
             {
@@ -70,9 +70,9 @@ namespace EduConvEquation
             string replaced = input;
             if (alignOpt == 0x04)
             {
-                char[] d = {'#'};
+                char[] d = { '#' };
                 string[] arr = replaced.Split(d);
-                for( int i = 0; i < arr.Length; i++ )
+                for (int i = 0; i < arr.Length; i++)
                 {
                     Regex r = new Regex("([=<>])");
                     arr[i] = r.Replace(arr[i], "&$1", 1);
@@ -99,8 +99,8 @@ namespace EduConvEquation
 
         private string AdjustPile(ObjectListRecord parent, AbstractRecord current, string formated)
         {
-            if (parent.RecType == MTEFConst.REC_PILE 
-            ||  parent.RecType == MTEFConst.REC_LINE)
+            if (parent.RecType == MTEFConst.REC_PILE
+            || parent.RecType == MTEFConst.REC_LINE)
             {
                 if (parent.LimitCount > 0 && parent.ChildRecs.Count != parent.LimitCount)
                 {
@@ -191,11 +191,11 @@ namespace EduConvEquation
                     if ((((ObjectListRecord)rec).Option & MTEFConst.mtfeOPT_CHAR_EMBELL) == MTEFConst.mtfeOPT_CHAR_EMBELL)
                     {
                         if (((ObjectListRecord)rec).EmbellRec.Embell == 0x0A
-                        ||  ((ObjectListRecord)rec).EmbellRec.Embell == 0x16)
+                        || ((ObjectListRecord)rec).EmbellRec.Embell == 0x16)
                             retStr = trimStr.Length > 0 ? "{not " + retStr + "}" : retStr;
                     }
                     if (((ObjectListRecord)rec).Selector == 0x81
-                    ||  ((ObjectListRecord)rec).Selector == 0x82)
+                    || ((ObjectListRecord)rec).Selector == 0x82)
                         retStr = trimStr.Length > 0 ? "{rm " + retStr + "}" : retStr;
                     if (trimStr.Length > 0)
                         if (limitType == 1)
@@ -346,6 +346,19 @@ namespace EduConvEquation
                                    + " right}" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
                     }
                 }
+                else if (((ObjectListRecord)rec).Selector == 0x04) //Fences
+                {
+                        if (((ObjectListRecord)rec).Variation == 0x03)
+                            retStr += " left|" 
+                                   + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0)
+                                   + " right|";
+                        else if (((ObjectListRecord)rec).Variation == 0x01)
+                            retStr += " left|"
+                                   + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
+                        else if (((ObjectListRecord)rec).Variation == 0x02)
+                            retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0)
+                                   + " right|"; 
+                }
                 else if (((ObjectListRecord)rec).Selector == 0x0A) //Root(SQRT)
                 {
                     retStr += " SQRT{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0) + "}";
@@ -431,9 +444,9 @@ namespace EduConvEquation
             {
                 if (((ObjectListRecord)rec).ChildRecs.Count > 0)
                 {
-                    if ((rec.RecType == MTEFConst.REC_TMPL 
-                       ||rec.RecType == MTEFConst.REC_PILE
-                       ||rec.RecType == MTEFConst.REC_MATRIX) && keepNextRecord)
+                    if ((rec.RecType == MTEFConst.REC_TMPL
+                       || rec.RecType == MTEFConst.REC_PILE
+                       || rec.RecType == MTEFConst.REC_MATRIX) && keepNextRecord)
                         retStr += FmtToHwpStr(rec.NextRec, true, false, selector, variation, limitType);
                 }
                 else if (keepNextRecord)
@@ -452,11 +465,11 @@ namespace EduConvEquation
             byte[] readBuffer = new byte[16384]; // our input buffer
             //byte[] readBuffer = new byte[100]; // our input buffer
             int bytesRead = 0; // number of bytes read
-            int offset    = 0; // offset inside read-buffer
-            long filePos  = 0; // position inside the file before read operation
-            while( (bytesRead = fs.Read(readBuffer, offset, readBuffer.Length - offset)) > 0 )
+            int offset = 0; // offset inside read-buffer
+            long filePos = 0; // position inside the file before read operation
+            while ((bytesRead = fs.Read(readBuffer, offset, readBuffer.Length - offset)) > 0)
             {
-                for( int i = 0; i < bytesRead + offset - bufferToLookFor.Length; i++ )
+                for (int i = 0; i < bytesRead + offset - bufferToLookFor.Length; i++)
                 {
                     bool match = true;
                     for (int j = 0; j < bufferToLookFor.Length; j++)
@@ -484,11 +497,11 @@ namespace EduConvEquation
         private void CollectMTEFBlock(FileStream fs, long startPos)
         {
             fs.Seek(startPos, SeekOrigin.Begin);
-            int sizeBlock    = 0;
+            int sizeBlock = 0;
             int totSizeBlock = 0;
             LstBlock.Clear();
             byte[] totBlock = null;
-            while( (sizeBlock = fs.ReadByte()) > 0 )
+            while ((sizeBlock = fs.ReadByte()) > 0)
             {
                 Console.WriteLine("Size of Block = {0}", sizeBlock);
                 byte[] blockData = new byte[sizeBlock];
@@ -498,7 +511,7 @@ namespace EduConvEquation
             }
             Console.WriteLine("Count of block = {0}", LstBlock.Count);
             if (LstBlock.Count > 0)
-            {                                                                                                                                                                                                                                                                                                                       
+            {
                 totBlock = new byte[totSizeBlock];
                 int destOffset = 0;
                 foreach (byte[] elem in LstBlock)
@@ -523,9 +536,9 @@ namespace EduConvEquation
             int dataPos = 0;
 
             // Header
-            stMTEFHeader.MTEFVer       = data[0];
-            stMTEFHeader.platform      = data[1];
-            stMTEFHeader.productVer    = data[2];
+            stMTEFHeader.MTEFVer = data[0];
+            stMTEFHeader.platform = data[1];
+            stMTEFHeader.productVer = data[2];
             stMTEFHeader.productSubVer = data[3];
 
             dataPos = 5;
@@ -686,10 +699,10 @@ namespace EduConvEquation
                 Console.WriteLine("Size record added..{0:X2}", SizeRec.RecType);
             }
             else if (data[dp] == MTEFConst.REC_SIZE_FULL
-            ||       data[dp] == MTEFConst.REC_SIZE_SUB
-            ||       data[dp] == MTEFConst.REC_SIZE_SUB2
-            ||       data[dp] == MTEFConst.REC_SIZE_SYM
-            ||       data[dp] == MTEFConst.REC_SIZE_SUBSYM)
+            || data[dp] == MTEFConst.REC_SIZE_SUB
+            || data[dp] == MTEFConst.REC_SIZE_SUB2
+            || data[dp] == MTEFConst.REC_SIZE_SYM
+            || data[dp] == MTEFConst.REC_SIZE_SUBSYM)
             {
                 Objects.Add(new SizeRecord());
                 SizeRecord SizeRec = (SizeRecord)Objects.Last<AbstractRecord>();
@@ -873,7 +886,7 @@ namespace EduConvEquation
                     }
                     dp++;
                     objListRec.EmbellRec.Embell = data[dp];
-                    if (data[dp+1] == 0x00)
+                    if (data[dp + 1] == 0x00)
                         dp++;
                     Console.WriteLine("Variation = {0:X2}, VariationStr = {1}, Embell = {2:X2}", objListRec.Variation, objListRec.VariationStr, objListRec.EmbellRec.Embell);
                 }
@@ -947,7 +960,7 @@ namespace EduConvEquation
                 dp++;
                 objListRec.ColParts = data[dp];
                 if (objListRec.Rows > 0 || objListRec.Cols > 0)
-                    while( data[dp+1] == 0x00 )
+                    while (data[dp + 1] == 0x00)
                     {
                         dp++;
                     }
@@ -1099,4 +1112,3 @@ namespace EduConvEquation
         }
     }
 }
- 

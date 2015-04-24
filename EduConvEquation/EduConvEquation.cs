@@ -39,13 +39,21 @@ namespace EduConvEquation
 
         public string Convert(string path)
         {
-            if (!File.Exists(path))
-                return "File does not exist.";
-            else
+            try
             {
-                FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
+                if (!File.Exists(path))
+                    return "File does not exist.";
+                else
+                {
+                    Console.WriteLine("GIF File = {0}", path);
+                    FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
 
-                return Convert(fs);
+                    return Convert(fs);
+                }
+            }
+            catch (Exception e)
+            {
+                return e.Message;
             }
         }
 
@@ -244,6 +252,11 @@ namespace EduConvEquation
                     retStr += "{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation, lType) + "}";
                 //retStr += " " + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, selector, variation) + " ";
             }
+            else if (rec.RecType == MTEFConst.REC_LINE && rec.Option != 0x01 && ((ObjectListRecord)rec).ChildRecs.Count == 0)
+            {
+                //if (rec.ParentRec.RecType == MTEFConst.REC_TMPL && ((ObjectListRecord)rec.ParentRec).Selector == 0x25)
+                  retStr += "~";
+            }
             else if (rec.RecType == MTEFConst.REC_MATRIX)
             {
                 int i = 0;
@@ -277,13 +290,13 @@ namespace EduConvEquation
                         else
                         {
                             if (((ObjectListRecord)rec).HAlign == 0x01)
-                                retStr += " lpile{" + FmtToHwpStr(crec, false, false, selector, variation, 0);
+                                retStr += " lpile{" + FmtToHwpStr(crec, false, true, selector, variation, 0);
                             else if (((ObjectListRecord)rec).HAlign == 0x02)
-                                retStr += " pile{" + FmtToHwpStr(crec, false, false, selector, variation, 0);
+                                retStr += " pile{" + FmtToHwpStr(crec, false, true, selector, variation, 0);
                             else if (((ObjectListRecord)rec).HAlign == 0x03)
-                                retStr += " rpile{" + FmtToHwpStr(crec, false, false, selector, variation, 0);
+                                retStr += " rpile{" + FmtToHwpStr(crec, false, true, selector, variation, 0);
                             else
-                                retStr += " lpile{" + FmtToHwpStr(crec, false, false, selector, variation, 0);
+                                retStr += " lpile{" + FmtToHwpStr(crec, false, true, selector, variation, 0);
                             alignOpt = ((ObjectListRecord)rec).HAlign;
                         }
                     i++;
@@ -344,6 +357,32 @@ namespace EduConvEquation
                         else if (((ObjectListRecord)rec).Variation == 0x02)
                             retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0)
                                    + " right}" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
+                    }
+                }
+                else if (((ObjectListRecord)rec).Selector == 0x03) //Bracket
+                {
+                    if (hasMatrix && ((ObjectListRecord)rec).Variation == 0x01)
+                    //if (hasMatrix)
+                    {
+                        if ((((ObjectListRecord)rec).Variation & 0x03) == 0x03)
+                            retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
+                        else if ((((ObjectListRecord)rec).Variation & 0x01) == 0x01)
+                            retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
+                        else if ((((ObjectListRecord)rec).Variation & 0x02) == 0x02)
+                            retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
+                    }
+                    else
+                    {
+                        if (((ObjectListRecord)rec).Variation == 0x03)
+                            retStr += " left[" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0)
+                                   + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0)
+                                   + " right]" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[2], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
+                        else if (((ObjectListRecord)rec).Variation == 0x01)
+                            retStr += " left[" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0)
+                                   + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
+                        else if (((ObjectListRecord)rec).Variation == 0x02)
+                            retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0)
+                                   + " right]" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
                     }
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x04) //Fences
@@ -419,6 +458,19 @@ namespace EduConvEquation
                         }
                     }
                 }
+                else if (((ObjectListRecord)rec).Selector == 0x18) //underbrace
+                {
+                    retStr += " underbrace{"
+                           + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0)
+                           + "}"
+                           + "{"
+                           + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0)
+                           + "}";
+                }
+                else if (((ObjectListRecord)rec).Selector == 0x1B) //Subscript
+                {
+                    retStr += " _{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0) + "}";
+                }
                 else if (((ObjectListRecord)rec).Selector == 0x1C) //Superscript
                 {
                     retStr += " ^{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0) + "}";
@@ -438,6 +490,11 @@ namespace EduConvEquation
                         retStr += FmtToHwpStr(crec, true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0);
                     }
                     retStr += "}";
+                    if (limitType == 1)
+                        retStr = " rpile{~#" + retStr + "}";
+                    else if (limitType == 2)
+                        retStr = " rpile{" + retStr + "#~}";
+
                 }
             }
             if (rec is ObjectListRecord)
@@ -890,6 +947,11 @@ namespace EduConvEquation
                         dp++;
                     Console.WriteLine("Variation = {0:X2}, VariationStr = {1}, Embell = {2:X2}", objListRec.Variation, objListRec.VariationStr, objListRec.EmbellRec.Embell);
                 }
+                if (objListRec.VariationStr.Equals("[") || objListRec.VariationStr.Equals("]"))
+                    if (OpenedObjList.Last<ObjectListRecord>().RecType == MTEFConst.REC_TMPL && OpenedObjList.Last<ObjectListRecord>().Selector == 0x03)
+                    {
+                        objListRec.VariationStr = "`";
+                    }
                 if (OpenedObjList.Count > 0)
                 {
                     objListRec.ParentRec = (AbstractRecord)OpenedObjList.Last<ObjectListRecord>();
@@ -1027,15 +1089,19 @@ namespace EduConvEquation
             bool isDSpace = false;
             bool isQSpace = false;
             bool isDQSpace = false;
+            bool isAlpha = false, isBeta = false;
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc1);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc2);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc3);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc4);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc5);
             isSpace |= CompareBytes(data, dataPos, MTEFConst.spcS1);
+            isSpace |= CompareBytes(data, dataPos, MTEFConst.spcS11);
             isDSpace |= CompareBytes(data, dataPos, MTEFConst.spcS2);
             isQSpace |= CompareBytes(data, dataPos, MTEFConst.spcQ1);
             isDQSpace |= CompareBytes(data, dataPos, MTEFConst.spcQ2);
+            isAlpha = CompareBytes(data, dataPos, MTEFConst.alpha);
+            isBeta  = CompareBytes(data, dataPos, MTEFConst.beta);
             if (isNot)
                 return "";
             else if (isSpace)
@@ -1046,6 +1112,10 @@ namespace EduConvEquation
                 return "`";
             else if (isDQSpace)
                 return "``";
+            else if (isAlpha)
+                return "alpha";
+            else if (isBeta)
+                return "beta";
             else
             {
                 if (data[dataPos] == 0x00 && data[dataPos + 1] == 0xF7)

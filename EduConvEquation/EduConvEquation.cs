@@ -192,25 +192,33 @@ namespace EduConvEquation
 
             if (rec.RecType == MTEFConst.REC_CHAR)
             {
-                if (!((ObjectListRecord)rec).VariationStr.Equals("{") && !((ObjectListRecord)rec).VariationStr.Equals("}"))
+                if (((ObjectListRecord)rec).VariationStr.Equals("{"))
+                {
+                    retStr = "left{";
+                }
+                else if (((ObjectListRecord)rec).VariationStr.Equals("}"))
+                {
+                    retStr = "right}";
+                }
+                else
                 {
                     retStr = ((ObjectListRecord)rec).VariationStr;
-                    trimStr = retStr.Replace("`", "").Replace("~", "");
-                    if ((((ObjectListRecord)rec).Option & MTEFConst.mtfeOPT_CHAR_EMBELL) == MTEFConst.mtfeOPT_CHAR_EMBELL)
-                    {
-                        if (((ObjectListRecord)rec).EmbellRec.Embell == 0x0A
-                        || ((ObjectListRecord)rec).EmbellRec.Embell == 0x16)
-                            retStr = trimStr.Length > 0 ? "{not " + retStr + "}" : retStr;
-                    }
-                    if (((ObjectListRecord)rec).Selector == 0x81
-                    || ((ObjectListRecord)rec).Selector == 0x82)
-                        retStr = trimStr.Length > 0 ? "{rm " + retStr + "}" : retStr;
-                    if (trimStr.Length > 0)
-                        if (limitType == 1)
-                            retStr = " rpile{~#" + retStr + "}";
-                        else if (limitType == 2)
-                            retStr = " rpile{" + retStr + "#~}";
                 }
+                trimStr = retStr.Replace("`", "").Replace("~", "");
+                if ((((ObjectListRecord)rec).Option & MTEFConst.mtfeOPT_CHAR_EMBELL) == MTEFConst.mtfeOPT_CHAR_EMBELL)
+                {
+                    if (((ObjectListRecord)rec).EmbellRec.Embell == 0x0A
+                    || ((ObjectListRecord)rec).EmbellRec.Embell == 0x16)
+                        retStr = trimStr.Length > 0 ? "{not " + retStr + "}" : retStr;
+                }
+                if (((ObjectListRecord)rec).Selector == 0x81
+                || ((ObjectListRecord)rec).Selector == 0x82)
+                    retStr = trimStr.Length > 0 ? "{rm " + retStr + "}" : retStr;
+                if (trimStr.Length > 0 && !trimStr.Equals("="))
+                    if (limitType == 1)
+                        retStr = " rpile{~#" + retStr + "}";
+                    else if (limitType == 2)
+                        retStr = " rpile{" + retStr + "#~}";
             }
             else if (rec.RecType == MTEFConst.REC_COLOR)
                 retStr += "";
@@ -1089,7 +1097,7 @@ namespace EduConvEquation
             bool isDSpace = false;
             bool isQSpace = false;
             bool isDQSpace = false;
-            bool isAlpha = false, isBeta = false;
+            bool isAlpha = false, isBeta = false, isTilde = false, isBullet = false;
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc1);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc2);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc3);
@@ -1102,6 +1110,8 @@ namespace EduConvEquation
             isDQSpace |= CompareBytes(data, dataPos, MTEFConst.spcQ2);
             isAlpha = CompareBytes(data, dataPos, MTEFConst.alpha);
             isBeta  = CompareBytes(data, dataPos, MTEFConst.beta);
+            isTilde = CompareBytes(data, dataPos, MTEFConst.tilde);
+            isBullet = CompareBytes(data, dataPos, MTEFConst.bullet);
             if (isNot)
                 return "";
             else if (isSpace)
@@ -1116,6 +1126,10 @@ namespace EduConvEquation
                 return "alpha";
             else if (isBeta)
                 return "beta";
+            else if (isTilde)
+                return "sim";
+            else if (isBullet)
+                return "bullet";
             else
             {
                 if (data[dataPos] == 0x00 && data[dataPos + 1] == 0xF7)

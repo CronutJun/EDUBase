@@ -74,10 +74,11 @@ namespace EduConvEquation
 
         // Force space convert
         public static readonly byte[] spcQ1 = new byte[] { 0x01, 0xEF };
+        public static readonly byte[] spcQ11 = new byte[] { 0x08, 0xEF };
         public static readonly byte[] spcQ2 = new byte[] { 0x02, 0xEF };
         public static readonly byte[] spcS1 = new byte[] { 0x04, 0xEF };
         public static readonly byte[] spcS11 = new byte[] { 0x20, 0x00 };
-        public static readonly byte[] spcS2 = new byte[] { 0x08, 0xEF };
+        public static readonly byte[] spcS2 = new byte[] { 0x00, 0x00 };
         public static readonly byte[] spc1 = new byte[] { 0x05, 0x00 };
         public static readonly byte[] spc2 = new byte[] { 0x00, 0x00 };
         public static readonly byte[] spc3 = new byte[] { 0x04, 0x00 };

@@ -265,6 +265,11 @@ namespace EduConvEquation
                             else lType = 2;
                             break;
                         }
+                        else if (crec.RecType == MTEFConst.REC_TMPL && ((ObjectListRecord)crec).Selector == 0x1A )
+                        {
+                            lType = 1;
+                            break;
+                        }
                     }
                 }
                 if (skipBrace)
@@ -455,6 +460,10 @@ namespace EduConvEquation
                     }
                     retStr += "}";
                 }
+                else if (((ObjectListRecord)rec).Selector == 0x0E) //arrow
+                {
+                    retStr += " vec{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm) + "}";
+                }
                 else if (((ObjectListRecord)rec).Selector == 0x16) //Summation
                 {
                     if (((ObjectListRecord)rec).ChildRecs.Count <= 1)
@@ -512,6 +521,20 @@ namespace EduConvEquation
                            + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm)
                            + "}";
                 }
+                else if (((ObjectListRecord)rec).Selector == 0x1A) //Long Divide
+                {
+                    if (((ObjectListRecord)rec).ChildRecs.Count <= 1)
+                    {
+                        retStr += "bar{)" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm) + "}";
+                    }
+                    else
+                    {
+                        retStr += " rpile{";
+                        retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm);
+                        retStr += "# bar{)" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm) + "}";
+                        retStr += "}";
+                    }
+                }
                 else if (((ObjectListRecord)rec).Selector == 0x1B) //Subscript
                 {
                     retStr += " _{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm) + "}";
@@ -553,6 +576,10 @@ namespace EduConvEquation
                     if ((((ObjectListRecord)rec).Variation & 0x03) == 0x02) // Not
                     {
                         retStr += "{not " + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, true, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, true) + "}";
+                        if (limitType == 1)
+                            retStr = " rpile{~#" + retStr + "}";
+                        else if (limitType == 2)
+                            retStr = " rpile{" + retStr + "#~}";
                     }
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x25) //Box
@@ -938,7 +965,8 @@ namespace EduConvEquation
                     objListRec.ParentRec = (AbstractRecord)OpenedObjList.Last<ObjectListRecord>();
                     ObjectListRecord lastPtr = OpenedObjList.Last<ObjectListRecord>();
                     OpenedObjList.Last<ObjectListRecord>().ChildRecs.Add(objListRec);
-                    if (objListRec.Selector == 0x17) //Limits
+                    if (objListRec.Selector == 0x17 //Limits
+                    ||  objListRec.Selector == 0x1A )//Long division
                     {
                         lastPtr.LimitCount++;
                         Console.WriteLine("ChildRec count = {0}, LimitCount = {1}", lastPtr.ChildRecs.Count, lastPtr.LimitCount);

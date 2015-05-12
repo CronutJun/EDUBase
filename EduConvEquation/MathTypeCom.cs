@@ -822,10 +822,12 @@ namespace EduConvEquation
         private int limitCount;
         private EmbellRecord embellRec = new EmbellRecord();
         private RulerRecord rulerRec = new RulerRecord();
+        private bool noRm;
 
         public ObjectListRecord()
         {
             limitCount = 0;
+            noRm = true;
         }
 
         public List<AbstractRecord> ChildRecs
@@ -1012,6 +1014,17 @@ namespace EduConvEquation
             get
             {
                 return rulerRec;
+            }
+        }
+        public bool NoRm
+        {
+            get
+            {
+                return noRm;
+            }
+            set
+            {
+                noRm = value;
             }
         }
     }

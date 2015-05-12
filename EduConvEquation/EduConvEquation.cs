@@ -264,7 +264,10 @@ namespace EduConvEquation
                     {
                         if (crec.RecType == MTEFConst.REC_TMPL && ((ObjectListRecord)crec).Selector == 0x17 && ((ObjectListRecord)crec).ChildRecs.Count > 1)
                         {
-                            if (((ObjectListRecord)crec).ChildRecs[2].RecType == 0x01 && ((ObjectListRecord)((ObjectListRecord)((ObjectListRecord)crec).ChildRecs[2]).ChildRecs[0]).VariationStr.Equals("bullet"))
+                            if (((ObjectListRecord)crec).ChildRecs.Count > 2
+                            && ((ObjectListRecord)crec).ChildRecs[2].RecType == MTEFConst.REC_LINE
+                            && ((ObjectListRecord)((ObjectListRecord)crec).ChildRecs[2]).ChildRecs.Count > 0
+                            && ((ObjectListRecord)((ObjectListRecord)((ObjectListRecord)crec).ChildRecs[2]).ChildRecs[0]).VariationStr.Equals("bullet"))
                             {
                                 lType = 0;
                             }

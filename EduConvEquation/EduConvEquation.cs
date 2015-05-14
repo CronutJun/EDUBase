@@ -230,8 +230,7 @@ namespace EduConvEquation
                     }
                 }
                 if (((ObjectListRecord)rec).Selector == 0x81
-                || ((ObjectListRecord)rec).Selector == 0x82
-                || ((ObjectListRecord)rec).Selector == 0x83)
+                || ((ObjectListRecord)rec).Selector == 0x82)
                 {
                     if (((ObjectListRecord)rec).EmbellRec.Embell != 0x0A
                     && ((ObjectListRecord)rec).EmbellRec.Embell != 0x16)

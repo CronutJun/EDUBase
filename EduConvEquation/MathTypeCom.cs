@@ -821,6 +821,7 @@ namespace EduConvEquation
         private byte colParts;
         private int limitCount;
         private EmbellRecord embellRec = new EmbellRecord();
+        private ColorDefRecord colorDefRec = new ColorDefRecord();
         private RulerRecord rulerRec = new RulerRecord();
         private bool noRm;
 
@@ -1007,6 +1008,13 @@ namespace EduConvEquation
             get
             {
                 return embellRec;
+            }
+        }
+        public ColorDefRecord ColorDefRec
+        {
+            get
+            {
+                return colorDefRec;
             }
         }
         public RulerRecord RulerRec

@@ -302,6 +302,7 @@ namespace EduConvEquation
                             if (((ObjectListRecord)crec).ChildRecs.Count > 2
                             && ((ObjectListRecord)crec).ChildRecs[2].RecType == MTEFConst.REC_LINE
                             && ((ObjectListRecord)((ObjectListRecord)crec).ChildRecs[2]).ChildRecs.Count > 0
+                            && ((ObjectListRecord)((ObjectListRecord)((ObjectListRecord)crec).ChildRecs[2]).ChildRecs[0]).VariationStr != null
                             && ((ObjectListRecord)((ObjectListRecord)((ObjectListRecord)crec).ChildRecs[2]).ChildRecs[0]).VariationStr.Equals("bullet"))
                             {
                                 lType = 0;
@@ -332,15 +333,40 @@ namespace EduConvEquation
             else if (rec.RecType == MTEFConst.REC_MATRIX)
             {
                 int i = 0;
+                int mType = 0;
+                int cols = 0;
                 foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
                 {
                     if (i > 0)
-                        retStr += "#" + FmtToHwpStr(crec, false, false, selector, variation, 0, noRm, chkRmStart);
+                    {
+                        if (mType == 2)
+                            retStr += "#" + FmtToHwpStr(crec, false, false, selector, variation, 0, noRm, chkRmStart);
+                        else
+                        {
+                            if (cols > 0)
+                            {
+                                retStr += "&" + FmtToHwpStr(crec, false, false, selector, variation, 0, noRm, chkRmStart);
+                                cols--;
+                            }
+                            else
+                            {
+                                retStr += "#" + FmtToHwpStr(crec, false, false, selector, variation, 0, noRm, chkRmStart);
+                                cols = ((ObjectListRecord)rec).Cols - 1;
+                            }
+                        }
+                    }
                     else
                         if (selector == 0x02 && variation == 0x01)
+                        {
+                            mType = 2;
                             retStr += " cases{" + FmtToHwpStr(crec, false, false, 0x00, 0x00, 0, noRm, chkRmStart);
+                        }
                         else
+                        {
+                            mType = 1;
                             retStr += " matrix{" + FmtToHwpStr(crec, false, false, selector, variation, 0, noRm, chkRmStart);
+                            cols = ((ObjectListRecord)rec).Cols - 1;
+                        }
                     i++;
                 }
                 if (i > 0)
@@ -520,7 +546,14 @@ namespace EduConvEquation
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x0E) //arrow
                 {
-                    retStr += " vec{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart) + "}";
+                    if ((((ObjectListRecord)rec).Variation & 0x04) == 0x04)
+                    {
+                        retStr += " buildrel -> {" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart) + "}";
+                    }
+                    else
+                    {
+                        retStr += " vec{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart) + "}";
+                    }
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x16) //Summation
                 {
@@ -534,7 +567,7 @@ namespace EduConvEquation
                         {
                             retStr += " rpile{";
                             retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[2], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
-                            retStr += "#" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
+                            retStr += "#" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[3], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
                             retStr += "}";
                         }
                         else
@@ -556,7 +589,9 @@ namespace EduConvEquation
                     {
                         if (((ObjectListRecord)((ObjectListRecord)rec).ChildRecs[1]).ChildRecs.Count == 0)
                         {
-                            if (((ObjectListRecord)rec).ChildRecs[2].RecType == 0x01 && ((ObjectListRecord)((ObjectListRecord)((ObjectListRecord)rec).ChildRecs[2]).ChildRecs[0]).VariationStr.Equals("bullet"))
+                            if (((ObjectListRecord)rec).ChildRecs[2].RecType == 0x01
+                            &&  ((ObjectListRecord)((ObjectListRecord)((ObjectListRecord)rec).ChildRecs[2]).ChildRecs[0]).VariationStr != null
+                            &&  ((ObjectListRecord)((ObjectListRecord)((ObjectListRecord)rec).ChildRecs[2]).ChildRecs[0]).VariationStr.Equals("bullet"))
                             {
                                 retStr += " dot{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart) + "}";
                             }
@@ -1097,28 +1132,58 @@ namespace EduConvEquation
                 if ((objListRec.Option & MTEFConst.mtfeOPT_CHAR_EMBELL) == MTEFConst.mtfeOPT_CHAR_EMBELL)
                 {
                     dp++;
-                    objListRec.EmbellRec.RecType = data[dp];
-                    dp++;
-                    objListRec.EmbellRec.Option = data[dp];
-                    if ((objListRec.EmbellRec.Option & MTEFConst.mtfeOPT_NUDGE) == MTEFConst.mtfeOPT_NUDGE)
+                    if (data[dp] == MTEFConst.REC_EMBELL)
                     {
+                        objListRec.EmbellRec.RecType = data[dp];
                         dp++;
-                        byte embellNudgeDX = data[dp];
-                        dp++;
-                        byte embellNudgeDY = data[dp];
-                        if (embellNudgeDX == 0x80 && embellNudgeDY == 0x80)
+                        objListRec.EmbellRec.Option = data[dp];
+                        if ((objListRec.EmbellRec.Option & MTEFConst.mtfeOPT_NUDGE) == MTEFConst.mtfeOPT_NUDGE)
                         {
                             dp++;
+                            byte embellNudgeDX = data[dp];
                             dp++;
-                            dp++;
-                            dp++;
+                            byte embellNudgeDY = data[dp];
+                            if (embellNudgeDX == 0x80 && embellNudgeDY == 0x80)
+                            {
+                                dp++;
+                                dp++;
+                                dp++;
+                                dp++;
+                            }
                         }
-                    }
-                    dp++;
-                    objListRec.EmbellRec.Embell = data[dp];
-                    if (data[dp + 1] == 0x00)
                         dp++;
-                    Console.WriteLine("Variation = {0:X2}, VariationStr = {1}, Embell = {2:X2}", objListRec.Variation, objListRec.VariationStr, objListRec.EmbellRec.Embell);
+                        objListRec.EmbellRec.Embell = data[dp];
+                        if (data[dp + 1] == 0x00)
+                            dp++;
+                        Console.WriteLine("Variation = {0:X2}, VariationStr = {1}, Embell = {2:X2}", objListRec.Variation, objListRec.VariationStr, objListRec.EmbellRec.Embell);
+                    }
+                    else if (data[dp] == MTEFConst.REC_COLOR_DEF)
+                    {
+                        objListRec.ColorDefRec.RecType = data[dp];
+                        dp++;
+                        objListRec.ColorDefRec.Option = data[dp];
+                        dp++;
+                        objListRec.ColorDefRec.Color1H = data[dp];
+                        dp++;
+                        objListRec.ColorDefRec.Color1L = data[dp];
+                        dp++;
+                        objListRec.ColorDefRec.Color2H = data[dp];
+                        dp++;
+                        objListRec.ColorDefRec.Color2L = data[dp];
+                        dp++;
+                        objListRec.ColorDefRec.Color3H = data[dp];
+                        dp++;
+                        objListRec.ColorDefRec.Color3L = data[dp];
+                        if (objListRec.ColorDefRec.Option == MTEFConst.mtfeCOLOR_CMYK)
+                        {
+                            dp++;
+                            objListRec.ColorDefRec.Color4H = data[dp];
+                            dp++;
+                            objListRec.ColorDefRec.Color4L = data[dp];
+                        }
+                        dp++;
+                        objListRec.ColorDefRec.ColorName = ByteToString(data, ref dp);
+                    }
                 }
                 if (objListRec.VariationStr.Equals("\""))
                 {
@@ -1331,6 +1396,11 @@ namespace EduConvEquation
                             data[dataPos] = 0xA0;
                             data[dataPos + 1] = 0x25;
                         }
+                        else if (data[dataPos + 2] == 0x98)
+                        {
+                            data[dataPos] = 0xCF;
+                            data[dataPos + 1] = 0x25;
+                        }
                         else
                         {
                             data[dataPos] = 0xA1;
@@ -1343,6 +1413,11 @@ namespace EduConvEquation
                         {
                             data[dataPos] = 0xB2;
                             data[dataPos + 1] = 0x25;
+                        }
+                        else if (data[dataPos + 2] == 0x5B)
+                        {
+                            data[dataPos] = 0xD2;
+                            data[dataPos + 1] = 0x21;
                         }
                         else
                         {

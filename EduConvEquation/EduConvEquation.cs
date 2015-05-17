@@ -614,12 +614,24 @@ namespace EduConvEquation
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x18) //underbrace
                 {
-                    retStr += " underbrace{"
-                           + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
-                           + "}"
-                           + "{"
-                           + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
-                           + "}";
+                    if (((ObjectListRecord)rec).Variation == 0x01)
+                    {
+                        retStr += " overbrace{"
+                               + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+                               + "}"
+                               + "{"
+                               + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+                               + "}";
+                    }
+                    else
+                    {
+                        retStr += " underbrace{"
+                               + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+                               + "}"
+                               + "{"
+                               + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+                               + "}";
+                    }
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x1A) //Long Divide
                 {
@@ -1389,7 +1401,20 @@ namespace EduConvEquation
             {
                 if (data[dataPos] == 0x00 && data[dataPos + 1] == 0xF7)
                 {
-                    if (fontName.Equals("Wingdings 2"))
+                    if (fontName.Equals("Wingdings"))
+                    {
+                        if (data[dataPos + 2] == 0xE8)
+                        {
+                            data[dataPos] = 0x92;
+                            data[dataPos + 1] = 0x21;
+                        }
+                        else
+                        {
+                            data[dataPos] = 0xA1;
+                            data[dataPos + 1] = 0x25;
+                        }
+                    }
+                    else if (fontName.Equals("Wingdings 2"))
                     {
                         if (data[dataPos + 2] == 0xA2)
                         {
@@ -1399,6 +1424,21 @@ namespace EduConvEquation
                         else if (data[dataPos + 2] == 0x98)
                         {
                             data[dataPos] = 0xCF;
+                            data[dataPos + 1] = 0x25;
+                        }
+                        else if (data[dataPos + 2] == 0xEA)
+                        {
+                            data[dataPos] = 0x05;
+                            data[dataPos + 1] = 0x26;
+                        }
+                        else if (data[dataPos + 2] == 0xBF)
+                        {
+                            data[dataPos] = 0xC6;
+                            data[dataPos + 1] = 0x25;
+                        }
+                        else if (data[dataPos + 2] == 0x70)
+                        {
+                            data[dataPos] = 0xB2;
                             data[dataPos + 1] = 0x25;
                         }
                         else

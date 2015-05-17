@@ -430,7 +430,20 @@ namespace EduConvEquation
             }
             else if (rec.RecType == MTEFConst.REC_TMPL)
             {
-                if (((ObjectListRecord)rec).Selector == 0x01) //Parentheses
+                if (((ObjectListRecord)rec).Selector == 0x00) //Angle Bracket
+                {
+                    if ((((ObjectListRecord)rec).Variation & 0x03) == 0x03)
+                        retStr += " left<"
+                               + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+                               + " right>";
+                    else if ((((ObjectListRecord)rec).Variation & 0x01) == 0x01)
+                        retStr += " left<"
+                               + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
+                    else if ((((ObjectListRecord)rec).Variation & 0x02) == 0x02)
+                        retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+                               + " right>";
+                }
+                else if (((ObjectListRecord)rec).Selector == 0x01) //Parentheses
                 {
                     if ((((ObjectListRecord)rec).Variation & 0x03) == 0x03)
                         retStr += " left" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
@@ -1363,7 +1376,7 @@ namespace EduConvEquation
             bool isDSpace = false;
             bool isQSpace = false;
             bool isDQSpace = false;
-            bool isAlpha = false, isBeta = false, isTilde = false, isBullet = false;
+            bool isAlpha = false, isBeta = false, isTilde = false, isBullet = false, isAngleBO = false, isAngleBC = false;
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc1);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc2);
             isNot |= CompareBytes(data, dataPos, MTEFConst.spc3);
@@ -1379,6 +1392,8 @@ namespace EduConvEquation
             isBeta  = CompareBytes(data, dataPos, MTEFConst.beta);
             isTilde = CompareBytes(data, dataPos, MTEFConst.tilde);
             isBullet = CompareBytes(data, dataPos, MTEFConst.bullet);
+            isAngleBO = CompareBytes(data, dataPos, MTEFConst.angleBO);
+            isAngleBC = CompareBytes(data, dataPos, MTEFConst.angleBC);
             if (isNot)
                 return "";
             else if (isSpace)
@@ -1397,6 +1412,10 @@ namespace EduConvEquation
                 return "sim";
             else if (isBullet)
                 return "bullet";
+            else if (isAngleBO)
+                return "";
+            else if (isAngleBC)
+                return "";
             else
             {
                 if (data[dataPos] == 0x00 && data[dataPos + 1] == 0xF7)
@@ -1439,6 +1458,11 @@ namespace EduConvEquation
                         else if (data[dataPos + 2] == 0x70)
                         {
                             data[dataPos] = 0xB2;
+                            data[dataPos + 1] = 0x25;
+                        }
+                        else if (data[dataPos + 2] == 0x81)
+                        {
+                            data[dataPos] = 0xCB;
                             data[dataPos + 1] = 0x25;
                         }
                         else

@@ -88,6 +88,8 @@ namespace EduConvEquation
         public static readonly byte[] beta = new byte[] { 0xB2, 0x03 };
         public static readonly byte[] tilde = new byte[] { 0x7E, 0x00 };
         public static readonly byte[] bullet = new byte[] { 0x8F, 0xE9 };
+        public static readonly byte[] angleBO = new byte[] { 0x29, 0x23 };
+        public static readonly byte[] angleBC = new byte[] { 0x2A, 0x23 };
 
     }
 

@@ -87,11 +87,39 @@ namespace EduConvEquation
                 }
                 replaced = String.Join("#", arr);
             }
+            char[] dots = { '⋅' };
+            string[] arrDots = replaced.Split(dots);
+            int dotsCnt = 0;
+            replaced = arrDots[0];
+            for (int i = 0; i < arrDots.Length; i++ )
+            {
+                if (i > 0 && arrDots[i].Length > 0 || (i == (arrDots.Length - 1) && arrDots[i].Length == 0))
+                {
+                    if (dotsCnt == 3)
+                        replaced += " cdots ";
+                    replaced += arrDots[i];
+                    dotsCnt = 1;
+                }
+                else
+                {
+                    dotsCnt++;
+                    if (dotsCnt == 4)
+                    {
+                        replaced += "⋅⋅⋅⋅";
+                    }
+                    else if (dotsCnt > 4)
+                    {
+                        replaced += "⋅";
+                    }
+                }
+            }
             replaced = replaced.Replace("<−", "<`−")
                                .Replace("−>", "−`>")
                                .Replace("<=", "<`=")
                                .Replace("=>", "=`>")
-                               .Replace("GE", "{G}{E}");
+                               .Replace("GE", "{G}{E}")
+                               .Replace("TOP", "{T}{O}{P}")
+                               .Replace("DEG", "{D}{E}{G}");
             return replaced;
         }
 

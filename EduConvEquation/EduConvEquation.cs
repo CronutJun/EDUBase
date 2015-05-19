@@ -97,6 +97,13 @@ namespace EduConvEquation
                 {
                     if (dotsCnt == 3)
                         replaced += " cdots ";
+                    else if (dotsCnt < 3 && i == (arrDots.Length - 1))
+                    {
+                        for(int j = 0; j < dotsCnt; j++)
+                        {
+                            replaced += "⋅";
+                        }
+                    }
                     replaced += arrDots[i];
                     dotsCnt = 1;
                 }
@@ -265,7 +272,7 @@ namespace EduConvEquation
                     {
                         if (!chkRmStart)
                             retStr = trimStr.Length > 0 ? "{rm " + retStr : retStr;
-                        if (trimStr.Length > 0)
+                        if (!chkRmStart && trimStr.Length > 0)
                             chkRmStart = true;
                         if (limitType != 0 && chkRmStart)
                         {
@@ -278,7 +285,7 @@ namespace EduConvEquation
                 {
                     if (!chkRmStart)
                         retStr = trimStr.Length > 0 ? "{rm " + retStr : retStr;
-                    if (trimStr.Length > 0)
+                    if (!chkRmStart && trimStr.Length > 0)
                         chkRmStart = true;
                     if (limitType != 0 && chkRmStart)
                     {
@@ -458,6 +465,11 @@ namespace EduConvEquation
             }
             else if (rec.RecType == MTEFConst.REC_TMPL)
             {
+                if (chkRmStart)
+                {
+                    chkRmStart = false;
+                    retStr = "}" + retStr;
+                }
                 if (((ObjectListRecord)rec).Selector == 0x00) //Angle Bracket
                 {
                     if ((((ObjectListRecord)rec).Variation & 0x03) == 0x03)
@@ -578,7 +590,7 @@ namespace EduConvEquation
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x0D) //bar
                 {
-                    retStr += " bar{";
+                    retStr += "{bar ";
                     foreach (AbstractRecord crec in ((ObjectListRecord)rec).ChildRecs)
                     {
                         retStr += FmtToHwpStr(crec, true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
@@ -691,10 +703,18 @@ namespace EduConvEquation
                 else if (((ObjectListRecord)rec).Selector == 0x1B) //Subscript
                 {
                     retStr += " _{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart) + "}";
+                    if (limitType == 1)
+                        retStr = " rpile{~#`" + retStr + "`}";
+                    else if (limitType == 2)
+                        retStr = " rpile{`" + retStr + "`#~}";
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x1C) //Superscript
                 {
                     retStr += " ^{" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart) + "}";
+                    if (limitType == 1)
+                        retStr = " rpile{~#`" + retStr + "`}";
+                    else if (limitType == 2)
+                        retStr = " rpile{`" + retStr + "`#~}";
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x1D) //Sub,Super script
                 {

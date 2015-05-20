@@ -97,7 +97,7 @@ namespace EduConvEquation
                 {
                     if (dotsCnt == 3)
                         replaced += " cdots ";
-                    else if (dotsCnt < 3 && i == (arrDots.Length - 1))
+                    else if (dotsCnt < 3 && arrDots[i].Length > 0)
                     {
                         for(int j = 0; j < dotsCnt; j++)
                         {
@@ -120,10 +120,14 @@ namespace EduConvEquation
                     }
                 }
             }
-            replaced = replaced.Replace("<−", "<`−")
-                               .Replace("−>", "−`>")
-                               .Replace("<=", "<`=")
-                               .Replace("=>", "=`>")
+            replaced = replaced.Replace("<−", "<{−}")
+                               .Replace("−>", "{−}{>}")
+                               .Replace("−<", "{−}{<}")
+                               .Replace(">−", ">{-}")
+                               .Replace("<=", "<{=}")
+                               .Replace("=>", "{=}{>}")
+                               .Replace("=<", "{=}{<}")
+                               .Replace(">=", ">{=}")
                                .Replace("GE", "{G}{E}")
                                .Replace("TOP", "{T}{O}{P}")
                                .Replace("DEG", "{D}{E}{G}");
@@ -255,6 +259,10 @@ namespace EduConvEquation
                     if (((ObjectListRecord)rec).EmbellRec.Embell == 0x0A
                     || ((ObjectListRecord)rec).EmbellRec.Embell == 0x16)
                         retStr = trimStr.Length > 0 ? "{not " + retStr + "}" : retStr;
+                    else if (((ObjectListRecord)rec).EmbellRec.Embell == 0x02)
+                    {
+                        retStr = "{dot " + retStr + "}";
+                    }
                     else if (((ObjectListRecord)rec).EmbellRec.Embell == 0x05)
                     {
                         retStr = retStr + "'";
@@ -486,15 +494,19 @@ namespace EduConvEquation
                 else if (((ObjectListRecord)rec).Selector == 0x01) //Parentheses
                 {
                     if ((((ObjectListRecord)rec).Variation & 0x03) == 0x03)
-                        retStr += " left" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+//                        retStr += " left" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+                        retStr += " left("
                                + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
-                               + " right" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[2], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
+//                               + " right" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[2], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
+                               + " right)";
                     else if ((((ObjectListRecord)rec).Variation & 0x01) == 0x01)
-                        retStr += " left" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+//                        retStr += " left" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
+                        retStr += " left("
                                + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
                     else if ((((ObjectListRecord)rec).Variation & 0x02) == 0x02)
                         retStr += FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[0], true, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart)
-                               + " right" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
+//                               + " right" + FmtToHwpStr(((ObjectListRecord)rec).ChildRecs[1], false, false, ((ObjectListRecord)rec).Selector, ((ObjectListRecord)rec).Variation, 0, noRm, chkRmStart);
+                               + " right)";
                 }
                 else if (((ObjectListRecord)rec).Selector == 0x02) //Braces
                 {
@@ -1470,7 +1482,12 @@ namespace EduConvEquation
                 {
                     if (fontName.Equals("Wingdings"))
                     {
-                        if (data[dataPos + 2] == 0xE8)
+                        if (data[dataPos + 2] == 0xE7)
+                        {
+                            data[dataPos] = 0x90;
+                            data[dataPos + 1] = 0x21;
+                        }
+                        else if (data[dataPos + 2] == 0xE8)
                         {
                             data[dataPos] = 0x92;
                             data[dataPos + 1] = 0x21;

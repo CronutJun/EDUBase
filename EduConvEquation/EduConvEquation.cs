@@ -294,6 +294,7 @@ namespace EduConvEquation
                         }
                     }
                 }
+                    /*
                 else if (!noRm)
                 {
                     if (!chkRmStart)
@@ -309,6 +310,7 @@ namespace EduConvEquation
                         retStr += "}";
                     }
                 }
+                     */
                 else
                 {
                     if (chkRmStart)
